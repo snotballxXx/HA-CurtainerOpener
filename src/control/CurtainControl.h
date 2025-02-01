@@ -15,23 +15,32 @@ enum State
     Opening,
     Closing,
     Closed,
-    Stopped
+    Stopped,
+    PendingChange,
+    Calibrate
 };
 
 namespace Control
 {
+    class DebounceSwitch;
+
     class CurtainControl : public Interfaces::IAduninoBase, public Interfaces::ITopicCallback
     {
+        const int incCount = 100;
+
         Interfaces::IMessenger* _messenger;
+        Control::DebounceSwitch* _switch;
         State _currentState;
         State _newState;
+        bool _switchTriggered;
+        int _stepCount;
 
         public:
         CurtainControl(Interfaces::IMessenger* messenger);
         virtual void loop(unsigned long time);
         virtual void setup();
 
-        virtual void messageReceived(const String& topic, const String& payload); 
+        virtual void messageReceived(const String& topic, const String& payload);
         void moveCurtain();
         void sendStateUpdate();
     };

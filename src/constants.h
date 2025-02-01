@@ -12,7 +12,7 @@
 #define STATE_TOPIC         "home/{ID}/state"
 #define BASE_TOPIC          "home"
 #define SERIAL_BAUD_RATE     115200
-#define VERSION              "Version 1.0.0 - Curtain Control"
+#define VERSION              "Version 1.0.0a - Curtain Control"
 
 #define MAGIC_NUMBER                     23
 #define MAGIC_NUMBER_ADDR                 0
@@ -25,4 +25,22 @@
 #define DEFAULT_VALUE_MOTOR2_DIR              1
 #define DEFAULT_VALUE_STEP_COUNT           3200
 
+#define MOTOR1_STEP_PIN      D5
+#define MOTOR1_DIR_PIN       D6
+#define MOTOR1_ENABLE_PIN    D7
+
+#define END_STOP_SWITCH      D1
+
+#define MOTOR2_STEP_PIN      D2
+#define MOTOR2_DIR_PIN       D3
+#define MOTOR2_ENABLE_PIN    D4
+
+#define STATE_OPEN           "OPEN"
+#define STATE_OPENING        "OPENING"
+#define STATE_CLOSED         "CLOSED"
+#define STATE_CLOSING        "CLOSING"
+#define STATE_STOPPED        "STOPPED"
+#define CMD_OPEN             "OPEN"
+#define CMD_CLOSE            "CLOSE"
+#define CMD_STOP             "STOP"
 #endif  //!_CONSTANT_H_

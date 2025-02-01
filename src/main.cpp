@@ -37,14 +37,16 @@ curtains
 #include <Arduino.h>
 #include "./control/HomeAssistantMqtt.h"
 #include "./control/Wifi.h"
+#include "./control/WebServer.h"
 #include "./control/Ota.h"
 #include "./control/CurtainControl.h"
 #include "./control/Repository.h"
 #include "constants.h"
 
 Control::Wifi* wifi = new Control::Wifi();
+Control::WebServer* webServer = new Control::WebServer();
 Control::HomeAssistantMqtt* homeAssistant = new Control::HomeAssistantMqtt();
-Control::Ota* ota = new Control::Ota();
+Control::Ota* ota = new Control::Ota(webServer);
 Control::CurtainControl* curtain = new Control::CurtainControl(homeAssistant);
 
 void setup()
@@ -52,6 +54,7 @@ void setup()
     Serial.begin(SERIAL_BAUD_RATE);
     
     wifi->setup();
+    webServer->setup();
     homeAssistant->setup();
     ota->setup();
     curtain->setup();
@@ -62,6 +65,7 @@ void loop()
     unsigned long now = millis();
 
     wifi->loop(now);
+    webServer->loop(now);
     homeAssistant->loop(now);
     curtain->loop(now);
     ota->loop(now);

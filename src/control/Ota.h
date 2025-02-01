@@ -3,12 +3,19 @@
 
 #include "../interfaces/IArduinoBase.h"
 
+namespace Interfaces
+{
+    class IWebServer;
+}
+
 namespace Control
 {
     class Ota : public Interfaces::IAduninoBase
     {
+        Interfaces::IWebServer* _webserver;
+
         public:
-        Ota();
+        Ota(Interfaces::IWebServer* webserver);
         virtual void loop(unsigned long time);
         virtual void setup();        
     };    
