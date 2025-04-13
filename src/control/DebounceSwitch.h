@@ -1,10 +1,11 @@
 #ifndef _DEBOUNCE_SWITCH_H
 #define _DEBOUNCE_SWITCH_H
 
+#include "../interfaces/IArduinoBase.h"
 
 namespace Control
 {
-    class DebounceSwitch
+    class DebounceSwitch : public Interfaces::IAduninoBase
     {
         private:
             int _inputPin;
@@ -13,12 +14,14 @@ namespace Control
             int _changeState;
             int _currentState;
             int _mode;
+            String _name;
 
-            static DebounceSwitch* instance;
-            static void debounceISR();
+     //       static DebounceSwitch* instance;
+     //       static void debounceISR();
         public:
-            DebounceSwitch(int pin, unsigned long debounceDelay, int mode);
-
+            DebounceSwitch(int pin, unsigned long debounceDelay, int mode, String name);
+            virtual void loop(unsigned long time);
+            virtual void setup();
             bool isTriggered();
     };
 }

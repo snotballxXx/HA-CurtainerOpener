@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Success</title>
+    <script>
+	    let coundown = 5; 
+		let messageDiv = null;
+		const msg = "Taking you back to the config page in "; 
+        document.addEventListener("DOMContentLoaded", function() {
+			messageDiv = document.getElementById("message");
+            messageDiv.textContent = `${msg}${coundown}`;
+            setInterval(function() {
+				coundown--; 
+                if (coundown < 0) 
+				    window.history.back();
+                else 
+                    messageDiv.textContent = `${msg}${coundown}`;
+				}, 1000);
+        });
+    </script>
+</head>
+<body>
+    <h1>Success!!!</h1>
+    <div id="message"></div>
+</body>
+</html>
