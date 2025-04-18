@@ -69,14 +69,14 @@ void loop()
     homeAssistant->loop(now);
     controller->loop(now);
     ota->loop(now);
-} /*
-#define MOTOR1_STEP_PIN D1
-#define MOTOR_DIR_PIN D3
-#define MOTOR1_ENABLE_PIN D5
-#define END_STOP_SWITCH1 D7
-
-const int dirPin = MOTOR_DIR_PIN;
-const int stepPin = MOTOR1_STEP_PIN;
+}
+/*
+#include "constants.h"
+const int dirPin = MOTOR2_DIR_PIN;
+const int stepPin = MOTOR2_STEP_PIN;
+const int enablePin = MOTOR2_ENABLE_PIN;
+const int switchPin1 = END_STOP_SWITCH1;
+const int switchPin2 = END_STOP_SWITCH2;
 const int stepsPerRevolution = 200;
 
 void setup()
@@ -84,32 +84,45 @@ void setup()
     // Declare pins as Outputs
     pinMode(stepPin, OUTPUT);
     pinMode(dirPin, OUTPUT);
+    pinMode(enablePin, OUTPUT);
+    pinMode(switchPin1, INPUT_PULLUP);
+    pinMode(switchPin2, INPUT_PULLUP);
+
+    digitalWrite(enablePin, LOW);
+
+    Serial.begin(115200);
 }
 void loop()
 {
     // Set motor direction clockwise
-    digitalWrite(dirPin, HIGH);
+    /*    digitalWrite(dirPin, HIGH);
 
-    // Spin motor slowly
-    for (int x = 0; x < stepsPerRevolution; x++)
-    {
-        digitalWrite(stepPin, HIGH);
-        delayMicroseconds(1000);
-        digitalWrite(stepPin, LOW);
-        delayMicroseconds(1000);
-    }
+        // Spin motor slowly
+        for (int x = 0; x < stepsPerRevolution; x++)
+        {
+            digitalWrite(stepPin, HIGH);
+            delayMicroseconds(1000);
+            digitalWrite(stepPin, LOW);
+            delayMicroseconds(1000);
+        }
+        delay(1000); // Wait a second
+
+        // Set motor direction counterclockwise
+        digitalWrite(dirPin, LOW);
+
+        // Spin motor quickly
+        for (int x = 0; x < stepsPerRevolution; x++)
+        {
+            digitalWrite(stepPin, HIGH);
+            delayMicroseconds(1000);
+            digitalWrite(stepPin, LOW);
+            delayMicroseconds(1000);
+        }
     delay(1000); // Wait a second
 
-    // Set motor direction counterclockwise
-    digitalWrite(dirPin, LOW);
-
-    // Spin motor quickly
-    for (int x = 0; x < stepsPerRevolution; x++)
-    {
-        digitalWrite(stepPin, HIGH);
-        delayMicroseconds(1000);
-        digitalWrite(stepPin, LOW);
-        delayMicroseconds(1000);
-    }
-    delay(1000); // Wait a second
-}*/
+    Serial.print("SW1 ");
+    Serial.println(digitalRead(switchPin1));
+    Serial.print("SW2 ");
+    Serial.println(digitalRead(switchPin2));
+}
+*/

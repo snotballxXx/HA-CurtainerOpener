@@ -6,8 +6,10 @@
 
 using namespace Control;
 
-#define MOTOR_BOOL      "{MOTOR_BOOL}"
-#define MOTOR          "{MOTOR}"
+#define MOTOR1_BOOL     "{MOTOR1_BOOL}"
+#define MOTOR2_BOOL     "{MOTOR2_BOOL}"
+#define MOTOR1          "{MOTOR1}"
+#define MOTOR2          "{MOTOR2}"
 #define COUNT           "{COUNT}"
 #define VERSION_TAG     "{VERSION}"
 
@@ -22,15 +24,20 @@ void handlePost()
         Serial.print("Received POST data: "); 
         Serial.println(body);
 
-        byte motorDir = 0;
-        if (body.indexOf("motor=1") != -1)
-            motorDir = 1;
+        byte motor1 = 0;
+        if (body.indexOf("motor1=1") != -1)
+            motor1 = 1;
+
+        byte motor2 = 0;
+        if (body.indexOf("motor2=1") != -1)
+            motor2 = 1;
 
         unsigned short stepCount = body.substring(body.lastIndexOf('=') + 1).toInt();
         auto repo = Repository::getInstance();
         
         repo->setCloseStepCount(stepCount);
-        repo->setMotorDirection(motorDir);       
+        repo->setMotorDirection(MOTOR1_DIR_PIN, motor1);
+        repo->setMotorDirection(MOTOR2_DIR_PIN, motor2);       
         webServer->getServer()->send(200, "text/html", response);
     }
 }
@@ -53,9 +60,11 @@ void WebServer::setup()
         auto r = Repository::getInstance();
         String output = String(VERSION) + String(" ") + String(Utils::Helpers::composeClientID());
         String page = configPage;
-        page.replace(MOTOR_BOOL, r->getMotorDirection() == 0 ? "" : "checked");
+        page.replace(MOTOR1_BOOL, r->getMotorDirection(MOTOR1_DIR_PIN) == 0 ? "" : "checked");
+        page.replace(MOTOR2_BOOL, r->getMotorDirection(MOTOR2_DIR_PIN) == 0 ? "" : "checked");
 
-        page.replace(MOTOR, String(r->getMotorDirection()));
+        page.replace(MOTOR1, String(r->getMotorDirection(MOTOR1_DIR_PIN)));
+        page.replace(MOTOR2, String(r->getMotorDirection(MOTOR2_DIR_PIN)));
 
         page.replace(COUNT, String(r->getCloseStepCount()));
         page.replace(VERSION_TAG, output);      

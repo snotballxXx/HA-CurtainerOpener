@@ -20,13 +20,14 @@ namespace Control
         Control::DebounceSwitch *_switch;
         State _currentState;
         State _newState;
-        bool _switchTriggered;
+        bool _atHome;
         int _stepCount;
         int _pinStep;
         int _pinDir;
         int _pinEnable;
         int _pinStopSwitch;
         String _name;
+        bool _calibratingPriorToMove;
 
     public:
         MotorDriver(

@@ -3,7 +3,7 @@
 
 #include <StreamString.h>
 
-//const String response = "{ \"motor1\":{MOTOR1} ,\"motor2\":{MOTOR2},\"stepCount\":{COUNT}, \"status\":\"success\"}";
+// const String response = "{ \"motor1\":{MOTOR1} ,\"motor2\":{MOTOR2},\"stepCount\":{COUNT}, \"status\":\"success\"}";
 const String response = "<!DOCTYPE html>\n \
 <html lang=\"en\">\n \
 <head>\n \
@@ -39,7 +39,8 @@ const String configPage = "<!DOCTYPE html> \n  \
   <title>Motor Control Form</title> \n  \
   <script> \n  \
     function setHiddenValues() { \n  \
-      document.getElementById(\"hiddenMotor\").value = document.getElementById(\"motor\").checked ? 1 : 0; \n  \
+      document.getElementById(\"hiddenMotor1\").value = document.getElementById(\"motor1\").checked ? 1 : 0; \n  \
+      document.getElementById(\"hiddenMotor2\").value = document.getElementById(\"motor2\").checked ? 1 : 0; \n  \
     } \n  \
   </script> \n  \
       <style> \n  \
@@ -100,10 +101,14 @@ const String configPage = "<!DOCTYPE html> \n  \
     <div class=\"local-elements\"> \n  \
       <h1>Motor Control</h1> \n  \
       <form action=\"/configUpdate\" method=\"POST\" onsubmit=\"setHiddenValues()\"> \n  \
-        <label for=\"motor\">Motor:</label> \n  \
-        <input type=\"checkbox\" id=\"motor\" name=\"motor\" {MOTOR_BOOL} ><br><br> \n  \
+        <label for=\"motor1\">Motor1:</label> \n  \
+        <input type=\"checkbox\" id=\"motor1\" name=\"motor1\" {MOTOR1_BOOL} ><br><br> \n  \
          \n  \
-        <input type=\"hidden\" id=\"hiddenMotor\" name=\"motor\" value=\"{MOTOR}\"> \n  \
+        <label for=\"motor2\">Motor2:</label> \n  \
+        <input type=\"checkbox\" id=\"motor2\" name=\"motor2\" {MOTOR2_BOOL} ><br><br> \n  \
+         \n  \
+        <input type=\"hidden\" id=\"hiddenMotor1\" name=\"motor1\" value=\"{MOTOR1}\"> \n  \
+        <input type=\"hidden\" id=\"hiddenMotor2\" name=\"motor2\" value=\"{MOTOR2}\"> \n  \
          \n  \
         <label for=\"stepCount\">Step Count (max 100000):</label> \n  \
         <input type=\"number\" id=\"stepCount\" name=\"stepCount\" max=\"100000\" min=\"1000\" value=\"{COUNT}\"><br><br> \n  \
@@ -125,4 +130,4 @@ const String configPage = "<!DOCTYPE html> \n  \
 </body> \n  \
 </html>";
 
-#endif  //!_HTML_FILES_H_
+#endif //!_HTML_FILES_H_

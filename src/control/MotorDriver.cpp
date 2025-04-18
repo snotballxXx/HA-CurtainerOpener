@@ -13,13 +13,14 @@ MotorDriver::MotorDriver(
     int pinStopSwitch,
     String name) : _currentState(State::Stopped),
                    _newState(State::Stopped),
-                   _switchTriggered(false),
+                   _atHome(false),
                    _stepCount(0),
                    _pinStep(pinStep),
                    _pinDir(pinDir),
                    _pinEnable(pinEnable),
                    _pinStopSwitch(pinStopSwitch),
-                   _name(name)
+                   _name(name),
+                   _calibratingPriorToMove(false)
 {
 }
 
@@ -40,27 +41,41 @@ void MotorDriver::setup()
         Serial.println("Calibration mode active " + _name);
     }
     else
-        _switchTriggered = true;
+    _atHome = true;
 }
 
 void MotorDriver::loop(unsigned long time)
 {
-    _switch->isTriggered();
-    if (_switchTriggered)
+    auto switchClosed = _switch->isTriggered();
+    if (_atHome)
     {
         Serial.println("Switch Triggered, now open " + _name);
         _stepCount = 0;
-        _switchTriggered = false;
+        _atHome = false;
         _currentState = _newState = State::Open;
         digitalWrite(_pinEnable, HIGH);
+        if (_calibratingPriorToMove)
+        {
+            _newState = State::Closing;
+            _calibratingPriorToMove = false;
+        }
     }
 
     if (((_currentState == State::Closing || _currentState == State::Closed || _currentState == State::Stopped) && _newState == State::Opening) ||
         ((_currentState == State::Opening || _currentState == State::Open || _currentState == State::Stopped) && _newState == State::Closing) ||
         _newState == State::Calibrate)
     {
-        _currentState = _newState;
-        _newState = State::PendingChange;
+        if (_newState == State::Closing && !switchClosed)
+        {
+            _calibratingPriorToMove = true;
+            _currentState = State::Calibrate;
+            _newState = State::PendingChange;
+        }
+        else 
+        {
+            _currentState = _newState;
+            _newState = State::PendingChange;
+        }
         digitalWrite(_pinEnable, LOW);
     }
     else if ((_currentState == State::Opening && _newState == State::Open) ||
@@ -82,7 +97,7 @@ void MotorDriver::loop(unsigned long time)
 void MotorDriver::moveCurtain()
 {
     auto repo = Repository::getInstance();
-    const auto motorOpen = repo->getMotorDirection();
+    const auto motorOpen = repo->getMotorDirection(_pinDir);
     const auto motorClose = motorOpen == HIGH ? LOW : HIGH;
 
     digitalWrite(_pinDir, (_currentState == State::Opening || _currentState == State::Calibrate) ? motorOpen : motorClose);
@@ -97,7 +112,7 @@ void MotorDriver::moveCurtain()
     {
         if (_switch->isTriggered() && (_currentState == State::Opening || _currentState == State::Calibrate))
         {
-            _switchTriggered = true;
+            _atHome = true;
             return;
         }
 
@@ -118,6 +133,6 @@ void MotorDriver::moveCurtain()
     if (_stepCount < -500 && _currentState != State::Calibrate)
     {
         Serial.println("Soft stop due to negative count " + _name);
-        _switchTriggered = true;
+        _atHome = true;
     }
 }
