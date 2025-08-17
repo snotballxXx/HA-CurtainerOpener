@@ -13,7 +13,7 @@ MotorDriver::MotorDriver(
     int pinStopSwitch,
     String name) : _currentState(State::Stopped),
                    _newState(State::Stopped),
-                   _atHome(false),
+                   _arrivedHome(false),
                    _stepCount(0),
                    _pinStep(pinStep),
                    _pinDir(pinDir),
@@ -41,22 +41,22 @@ void MotorDriver::setup()
         Serial.println("Calibration mode active " + _name);
     }
     else
-    _atHome = true;
+        _arrivedHome = true;
 }
 
 void MotorDriver::loop(unsigned long time)
 {
     auto switchClosed = _switch->isTriggered();
-    if (_atHome)
+    if (_arrivedHome)
     {
-        Serial.println("Switch Triggered, now open " + _name);
+        Serial.println("Switch Triggered, now closed " + _name);
         _stepCount = 0;
-        _atHome = false;
-        _currentState = _newState = State::Open;
+        _arrivedHome = false;
+        _currentState = _newState = State::Closed;
         digitalWrite(_pinEnable, HIGH);
         if (_calibratingPriorToMove)
         {
-            _newState = State::Closing;
+            _newState = State::Opening;
             _calibratingPriorToMove = false;
         }
     }
@@ -65,13 +65,13 @@ void MotorDriver::loop(unsigned long time)
         ((_currentState == State::Opening || _currentState == State::Open || _currentState == State::Stopped) && _newState == State::Closing) ||
         _newState == State::Calibrate)
     {
-        if (_newState == State::Closing && !switchClosed)
+        if (_newState == State::Opening && !switchClosed)
         {
             _calibratingPriorToMove = true;
             _currentState = State::Calibrate;
             _newState = State::PendingChange;
         }
-        else 
+        else
         {
             _currentState = _newState;
             _newState = State::PendingChange;
@@ -87,32 +87,28 @@ void MotorDriver::loop(unsigned long time)
         digitalWrite(_pinEnable, HIGH);
     }
 
-    if (_currentState == State::Closing)
+    if (_currentState == State::Closing || _currentState == State::Calibrate)
         moveCurtain();
 
-    if (_currentState == State::Opening || _currentState == State::Calibrate)
+    if (_currentState == State::Opening)
         moveCurtain();
 }
 
 void MotorDriver::moveCurtain()
 {
     auto repo = Repository::getInstance();
-    const auto motorOpen = repo->getMotorDirection(_pinDir);
-    const auto motorClose = motorOpen == HIGH ? LOW : HIGH;
+    const auto motorClose = repo->getMotorDirection(_pinDir);
+    const auto motorOpen = motorClose == HIGH ? LOW : HIGH;
 
-    digitalWrite(_pinDir, (_currentState == State::Opening || _currentState == State::Calibrate) ? motorOpen : motorClose);
+    digitalWrite(_pinDir, (_currentState == State::Closing || _currentState == State::Calibrate) ? motorClose : motorOpen);
 
     delayMicroseconds(2);
 
-    Serial.print("Moving, currently at ");
-    Serial.print(_stepCount);
-    Serial.println(", " + _name);
-
     for (int i = 0; i <= incCount; i++)
     {
-        if (_switch->isTriggered() && (_currentState == State::Opening || _currentState == State::Calibrate))
+        if (_switch->isTriggered() && (_currentState == State::Closing || _currentState == State::Calibrate))
         {
-            _atHome = true;
+            _arrivedHome = true;
             return;
         }
 
@@ -122,17 +118,17 @@ void MotorDriver::moveCurtain()
         delayMicroseconds(1000);
     }
 
-    _stepCount += (((_currentState == State::Opening || _currentState == State::Calibrate) ? -1 : 1) * incCount);
+    _stepCount += (((_currentState == State::Closing || _currentState == State::Calibrate) ? -1 : 1) * incCount);
 
-    if (_stepCount >= repo->getCloseStepCount())
+    if (_stepCount >= repo->getMaxStepCount())
     {
-        Serial.println("Reached closed position " + _name);
-        _newState = State::Closed;
+        Serial.println("Reached open position " + _name);
+        _newState = State::Open;
     }
 
     if (_stepCount < -500 && _currentState != State::Calibrate)
     {
         Serial.println("Soft stop due to negative count " + _name);
-        _atHome = true;
+        _arrivedHome = true;
     }
 }

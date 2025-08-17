@@ -7,7 +7,7 @@ using namespace Control;
 
 Controller::Controller(Interfaces::IMessenger *messenger) : _messenger(messenger),
                                                             _currentState(State::Stopped),
-                                                            _pendingStateUpdate(false)
+                                                            _pendingStateUpdate(true)
 {
     _motor1 = new MotorDriver(MOTOR1_STEP_PIN, MOTOR1_DIR_PIN, MOTOR1_ENABLE_PIN, END_STOP_SWITCH1, "Motor1");
     _motor2 = new MotorDriver(MOTOR2_STEP_PIN, MOTOR2_DIR_PIN, MOTOR2_ENABLE_PIN, END_STOP_SWITCH2, "Motor2");
@@ -90,6 +90,7 @@ void Controller::sendStateUpdate()
         case State::Closing:
             _messenger->sendMessage(STATE_TOPIC, STATE_CLOSING);
             msg = "STATE_CLOSING";
+            _pendingStateUpdate = true;
             break;
         case State::Open:
             _messenger->sendMessage(STATE_TOPIC, STATE_OPEN);
@@ -98,6 +99,7 @@ void Controller::sendStateUpdate()
         case State::Opening:
             _messenger->sendMessage(STATE_TOPIC, STATE_OPENING);
             msg = "STATE_OPENING";
+            _pendingStateUpdate = true;
             break;
         case State::Stopped:
             _messenger->sendMessage(STATE_TOPIC, STATE_STOPPED);

@@ -35,7 +35,7 @@ void handlePost()
         unsigned short stepCount = body.substring(body.lastIndexOf('=') + 1).toInt();
         auto repo = Repository::getInstance();
         
-        repo->setCloseStepCount(stepCount);
+        repo->setMaxStepCount(stepCount);
         repo->setMotorDirection(MOTOR1_DIR_PIN, motor1);
         repo->setMotorDirection(MOTOR2_DIR_PIN, motor2);       
         webServer->getServer()->send(200, "text/html", response);
@@ -66,7 +66,7 @@ void WebServer::setup()
         page.replace(MOTOR1, String(r->getMotorDirection(MOTOR1_DIR_PIN)));
         page.replace(MOTOR2, String(r->getMotorDirection(MOTOR2_DIR_PIN)));
 
-        page.replace(COUNT, String(r->getCloseStepCount()));
+        page.replace(COUNT, String(r->getMaxStepCount()));
         page.replace(VERSION_TAG, output);      
         ws->send(200, "text/html", page); 
     });

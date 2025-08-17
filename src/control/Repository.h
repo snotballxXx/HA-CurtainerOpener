@@ -8,7 +8,7 @@ namespace Control
     {
         byte _motor1Direction;
         byte _motor2Direction;
-        unsigned short _closeStepCount;
+        unsigned short _maxStepCount;
         Repository();
         
         public:
@@ -20,8 +20,8 @@ namespace Control
         byte getMotorDirection(int id) { return id == MOTOR1_DIR_PIN ? _motor1Direction : _motor2Direction; }
         void setMotorDirection(int id, byte value);
 
-        unsigned short getCloseStepCount() { return _closeStepCount; }
-        void setCloseStepCount(unsigned short value);
+        unsigned short getMaxStepCount() { return _maxStepCount; }
+        void setMaxStepCount(unsigned short value);
     };
 }
 #endif  //!__REPOSITORY__H__

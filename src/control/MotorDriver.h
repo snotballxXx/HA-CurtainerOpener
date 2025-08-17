@@ -20,7 +20,7 @@ namespace Control
         Control::DebounceSwitch *_switch;
         State _currentState;
         State _newState;
-        bool _atHome;
+        bool _arrivedHome;
         int _stepCount;
         int _pinStep;
         int _pinDir;

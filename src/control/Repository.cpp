@@ -15,8 +15,8 @@ Repository::Repository()
         Serial.println("Repo loading");
         _motor1Direction = EEPROM.read(MOTOR1_DIR_ADDR);
         _motor2Direction = EEPROM.read(MOTOR2_DIR_ADDR);
-        _closeStepCount = EEPROM.read(STEP_COUNT_ADDR_HIGH) << 8;
-        _closeStepCount |= EEPROM.read(STEP_COUNT_ADDR_LOW);      
+        _maxStepCount = EEPROM.read(STEP_COUNT_ADDR_HIGH) << 8;
+        _maxStepCount |= EEPROM.read(STEP_COUNT_ADDR_LOW);      
     }
     else
     {
@@ -24,7 +24,7 @@ Repository::Repository()
         EEPROM.write(MAGIC_NUMBER_ADDR, MAGIC_NUMBER);
         setMotorDirection(MOTOR1_DIR_PIN, DEFAULT_VALUE_MOTOR1_DIR);
         setMotorDirection(MOTOR2_DIR_PIN, DEFAULT_VALUE_MOTOR2_DIR);
-        setCloseStepCount(DEFAULT_VALUE_STEP_COUNT);
+        setMaxStepCount(DEFAULT_VALUE_STEP_COUNT);
         EEPROM.commit();            
     }
 }
@@ -45,9 +45,9 @@ void Repository::setMotorDirection(int id, byte value)
     }
 }  
 
-void Repository::setCloseStepCount(unsigned short value)
+void Repository::setMaxStepCount(unsigned short value)
 {
-    _closeStepCount = value;
+    _maxStepCount = value;
     EEPROM.write(STEP_COUNT_ADDR_HIGH, value >> 8);
     EEPROM.write(STEP_COUNT_ADDR_LOW, value & 0x00FF);
 
