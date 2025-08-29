@@ -100,18 +100,21 @@ const String configPage = "<!DOCTYPE html> \n  \
     <!-- First column for local elements --> \n  \
     <div class=\"local-elements\"> \n  \
       <h1>Motor Control</h1> \n  \
+      <label for=\"motor1\">Motor1:</label> \n  \
+      <input type=\"checkbox\" id=\"motor1\" name=\"motor1\" {MOTOR1_BOOL} ><br><br> \n  \
+       \n  \
+      <label for=\"motor2\">Motor2:</label> \n  \
+      <input type=\"checkbox\" id=\"motor2\" name=\"motor2\" {MOTOR2_BOOL} ><br><br> \n  \
+       \n  \
       <form action=\"/configUpdate\" method=\"POST\" onsubmit=\"setHiddenValues()\"> \n  \
-        <label for=\"motor1\">Motor1:</label> \n  \
-        <input type=\"checkbox\" id=\"motor1\" name=\"motor1\" {MOTOR1_BOOL} ><br><br> \n  \
-         \n  \
-        <label for=\"motor2\">Motor2:</label> \n  \
-        <input type=\"checkbox\" id=\"motor2\" name=\"motor2\" {MOTOR2_BOOL} ><br><br> \n  \
-         \n  \
         <input type=\"hidden\" id=\"hiddenMotor1\" name=\"motor1\" value=\"{MOTOR1}\"> \n  \
         <input type=\"hidden\" id=\"hiddenMotor2\" name=\"motor2\" value=\"{MOTOR2}\"> \n  \
          \n  \
         <label for=\"stepCount\">Step Count (max 100000):</label> \n  \
         <input type=\"number\" id=\"stepCount\" name=\"stepCount\" max=\"100000\" min=\"1000\" value=\"{COUNT}\"><br><br> \n  \
+         \n  \
+        <label for=\"entity_id\">Entity Id:</label> \n  \
+        <input type=\"text\" id=\"entity_id\" name=\"entity_id\" value=\"{ENTITY_ID}\" ><br><br> \n  \
          \n  \
         <input type=\"submit\" value=\"Submit\"> \n  \
       </form> \n  \

@@ -3,6 +3,7 @@
 #include "./Repository.h"
 #include "../constants.h"
 #include "./DebounceSwitch.h"
+#include "../utils/NonBlockingPulseGenerator.h"
 
 using namespace Control;
 
@@ -26,18 +27,20 @@ MotorDriver::MotorDriver(
 
 void MotorDriver::setup()
 {
+    _pulseGenerator = new Utils::NonBlockingPulseGenerator(_pinStep, 1000, 1000);
     _switch = new DebounceSwitch(_pinStopSwitch, 100L, LOW, _name);
 
-    pinMode(_pinStep, OUTPUT);
     pinMode(_pinDir, OUTPUT);
     pinMode(_pinEnable, OUTPUT);
-
     digitalWrite(_pinEnable, HIGH);
-    digitalWrite(_pinStep, LOW);
 
     if (!_switch->isTriggered())
     {
+        auto storedState = Repository::getInstance()->getInitalState();
+        // if (storedState == State::Closing || storedState == State::Opening || storedState == State::PendingChange)
         _newState = State::Calibrate;
+        // else
+        //_newState = storedState;
         Serial.println("Calibration mode active " + _name);
     }
     else
@@ -46,6 +49,8 @@ void MotorDriver::setup()
 
 void MotorDriver::loop(unsigned long time)
 {
+    auto pulseComplete = !_pulseGenerator->update();
+
     auto switchClosed = _switch->isTriggered();
     if (_arrivedHome)
     {
@@ -87,10 +92,10 @@ void MotorDriver::loop(unsigned long time)
         digitalWrite(_pinEnable, HIGH);
     }
 
-    if (_currentState == State::Closing || _currentState == State::Calibrate)
+    if ((_currentState == State::Closing || _currentState == State::Calibrate) && pulseComplete)
         moveCurtain();
 
-    if (_currentState == State::Opening)
+    if (_currentState == State::Opening && pulseComplete)
         moveCurtain();
 }
 
@@ -102,21 +107,13 @@ void MotorDriver::moveCurtain()
 
     digitalWrite(_pinDir, (_currentState == State::Closing || _currentState == State::Calibrate) ? motorClose : motorOpen);
 
-    delayMicroseconds(2);
-
-    for (int i = 0; i <= incCount; i++)
+    if (_switch->isTriggered() && (_currentState == State::Closing || _currentState == State::Calibrate))
     {
-        if (_switch->isTriggered() && (_currentState == State::Closing || _currentState == State::Calibrate))
-        {
-            _arrivedHome = true;
-            return;
-        }
-
-        digitalWrite(_pinStep, HIGH);
-        delayMicroseconds(1000);
-        digitalWrite(_pinStep, LOW);
-        delayMicroseconds(1000);
+        _arrivedHome = true;
+        return;
     }
+
+    _pulseGenerator->trigger();
 
     _stepCount += (((_currentState == State::Closing || _currentState == State::Calibrate) ? -1 : 1) * incCount);
 

@@ -19,6 +19,7 @@ namespace Control
         WiFiClient *_espClient;
         PubSubClient *_client;
         String _clientId;
+        String _entityId;
         std::multimap<String, Interfaces::ITopicCallback *> _callbacks;
 
         void reconnect();

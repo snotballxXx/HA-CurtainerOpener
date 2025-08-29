@@ -9,6 +9,11 @@ namespace Interfaces
     class IMessenger;
 }
 
+namespace Utils
+{
+    class NonBlockingPulseGenerator;
+}
+
 namespace Control
 {
     class DebounceSwitch;
@@ -17,6 +22,7 @@ namespace Control
     {
         const int incCount = 1;
 
+        Utils::NonBlockingPulseGenerator * _pulseGenerator;
         Control::DebounceSwitch *_switch;
         State _currentState;
         State _newState;

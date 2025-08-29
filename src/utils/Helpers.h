@@ -7,8 +7,10 @@ namespace Utils
 {
     class Helpers
     {
-        public:
+    public:
         static String composeClientID();
+
+        static String getValue(String data, char separator, int index);
     };
 }
 

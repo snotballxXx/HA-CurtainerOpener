@@ -6,9 +6,10 @@
 #include "interfaces/ITopicCallback.h"
 #include "../constants.h"
 #include "../utils/Helpers.h"
+#include "./Repository.h"
 
 /*
-The state of a cover 
+The state of a cover
 A cover can have the following states:
 
 Opening: The cover is in the process of opening to reach a set position.
@@ -35,10 +36,10 @@ String discoveryMessage = "{ \
     \"name\": \"{ID}-curtain\" \
   }, \
   \"components\": { \
-     \"main_curtain\": { \
+     \"{ENTITY_ID}\": { \
        \"platform\": \"cover\", \
        \"device_class\": \"curtain\", \
-       \"name\": \"main curtain\", \
+       \"name\": \"{ENTITY_ID}\", \
        \"command_topic\": \"home/{ID}/command\", \
        \"state_topic\": \"home/{ID}/state\", \
        \"payload_open\": \"OPEN\", \
@@ -81,6 +82,8 @@ void HomeAssistantMqtt::setup()
 
   _clientId = Utils::Helpers::composeClientID();
   _clientId.replace(':', '-');
+
+  _entityId = Repository::getInstance()->getEntityId();
 }
 
 void HomeAssistantMqtt::loop(unsigned long time)
@@ -142,6 +145,7 @@ void HomeAssistantMqtt::reconnect()
 
       String msg = discoveryMessage;
       msg.replace("{ID}", _clientId);
+      msg.replace("{ENTITY_ID}", _entityId);
 
       Serial.println("Message published to topic (2k) '" + topic + "' :" + msg);
       // Once connected, publish a discovery message

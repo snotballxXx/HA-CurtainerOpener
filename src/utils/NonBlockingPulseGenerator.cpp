@@ -1,0 +1,39 @@
+
+#include "./NonBlockingPulseGenerator.h"
+
+using namespace Utils;
+
+NonBlockingPulseGenerator::NonBlockingPulseGenerator(int outputPin, uint64_t microsOn, uint64_t microsOff) : _pin(outputPin),
+                                                                                                             _onDuration(microsOn),
+                                                                                                             _offDuration(microsOff),
+                                                                                                             _active(false)
+{
+    pinMode(_pin, OUTPUT);
+    digitalWrite(_pin, LOW);
+}
+
+void NonBlockingPulseGenerator::trigger()
+{
+    digitalWrite(_pin, HIGH);
+    auto startTime = micros64();
+    _offTime = startTime + _onDuration;
+    _offActiveTime = startTime + _onDuration + _offDuration;
+    _active = true;
+}
+
+bool NonBlockingPulseGenerator::update()
+{
+    if (_active)
+    {
+        auto time = micros64();
+        if (time > _offActiveTime)
+        {
+            digitalWrite(_pin, LOW);
+            _active = false;
+        }
+        else if (time > _offTime)
+            digitalWrite(_pin, LOW);
+    }
+
+    return _active;
+}

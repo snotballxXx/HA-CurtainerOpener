@@ -6,22 +6,24 @@
 
 using namespace Control;
 
-#define MOTOR1_BOOL     "{MOTOR1_BOOL}"
-#define MOTOR2_BOOL     "{MOTOR2_BOOL}"
-#define MOTOR1          "{MOTOR1}"
-#define MOTOR2          "{MOTOR2}"
-#define COUNT           "{COUNT}"
-#define VERSION_TAG     "{VERSION}"
+#define MOTOR1_BOOL "{MOTOR1_BOOL}"
+#define MOTOR2_BOOL "{MOTOR2_BOOL}"
+#define MOTOR1 "{MOTOR1}"
+#define MOTOR2 "{MOTOR2}"
+#define COUNT "{COUNT}"
+#define ENTITY_ID "{ENTITY_ID}"
+#define VERSION_TAG "{VERSION}"
 
-extern Control::WebServer* webServer;
+extern Control::WebServer *webServer;
 
 void handlePost()
 {
     Serial.print("Received POST");
-    if (webServer->getServer()->hasArg("plain")) 
-    { 
-        String body = webServer->getServer()->arg("plain"); 
-        Serial.print("Received POST data: "); 
+    if (webServer->getServer()->hasArg("plain"))
+    {
+        // motor1=1&motor2=0&stepCount=5000&entity_id=test
+        String body = webServer->getServer()->arg("plain");
+        Serial.print("Received POST data: ");
         Serial.println(body);
 
         byte motor1 = 0;
@@ -32,18 +34,21 @@ void handlePost()
         if (body.indexOf("motor2=1") != -1)
             motor2 = 1;
 
-        unsigned short stepCount = body.substring(body.lastIndexOf('=') + 1).toInt();
+        auto stepCountPart = Utils::Helpers::getValue(body, '&', 2);
+        unsigned short stepCount = stepCountPart.substring(stepCountPart.indexOf('=') + 1).toInt();
+        auto entityIdPart = Utils::Helpers::getValue(body, '&', 3);
+        auto entityId = entityIdPart.substring(entityIdPart.indexOf('=') + 1);
+
         auto repo = Repository::getInstance();
-        
         repo->setMaxStepCount(stepCount);
         repo->setMotorDirection(MOTOR1_DIR_PIN, motor1);
-        repo->setMotorDirection(MOTOR2_DIR_PIN, motor2);       
+        repo->setMotorDirection(MOTOR2_DIR_PIN, motor2);
+        repo->setEntityId(entityId);
         webServer->getServer()->send(200, "text/html", response);
     }
 }
 
-WebServer::WebServer() :
-_webServer(nullptr)
+WebServer::WebServer() : _webServer(nullptr)
 {
     _webServer = new ESP8266WebServer(80);
 }
@@ -51,12 +56,12 @@ _webServer(nullptr)
 void WebServer::setup()
 {
     Serial.println("HTTP server started");
-    
+
     _webServer->begin();
 
-    ESP8266WebServer* ws = _webServer;
-    _webServer->on("/", [ws]() {
-
+    ESP8266WebServer *ws = _webServer;
+    _webServer->on("/", [ws]()
+                   {
         auto r = Repository::getInstance();
         String output = String(VERSION) + String(" ") + String(Utils::Helpers::composeClientID());
         String page = configPage;
@@ -66,10 +71,11 @@ void WebServer::setup()
         page.replace(MOTOR1, String(r->getMotorDirection(MOTOR1_DIR_PIN)));
         page.replace(MOTOR2, String(r->getMotorDirection(MOTOR2_DIR_PIN)));
 
+        page.replace(ENTITY_ID, String(r->getEntityId()));
+
         page.replace(COUNT, String(r->getMaxStepCount()));
         page.replace(VERSION_TAG, output);      
-        ws->send(200, "text/html", page); 
-    });
+        ws->send(200, "text/html", page); });
 
     _webServer->on("/configUpdate", HTTP_POST, handlePost);
 }

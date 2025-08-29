@@ -2,6 +2,7 @@
 #include "./MotorDriver.h"
 #include "../interfaces/IMessenger.h"
 #include <constants.h>
+#include "./Repository.h"
 
 using namespace Control;
 
@@ -71,6 +72,7 @@ void Controller::messageReceived(const String &topic, const String &payload)
         sendStateUpdate();
     }
 
+    Repository::getInstance()->setState(_currentState);
     _motor1->setState(_currentState);
     _motor2->setState(_currentState);
 }
@@ -81,6 +83,7 @@ void Controller::sendStateUpdate()
     {
         String msg("");
         _pendingStateUpdate = false;
+        Repository::getInstance()->setState(_currentState);
         switch (_currentState)
         {
         case State::Closed:
