@@ -42,9 +42,11 @@ curtains
 #include "./control/Controller.h"
 #include "./control/Repository.h"
 #include "constants.h"
+#include "FileSystem.h"
 
+FileSystem *fileSystem = new FileSystem();
 Control::Wifi *wifi = new Control::Wifi();
-Control::WebServer *webServer = new Control::WebServer();
+Control::WebServer *webServer = new Control::WebServer(fileSystem);
 Control::HomeAssistantMqtt *homeAssistant = new Control::HomeAssistantMqtt();
 Control::Ota *ota = new Control::Ota(webServer);
 Control::Controller *controller = new Control::Controller(homeAssistant);
@@ -53,6 +55,7 @@ void setup()
 {
     Serial.begin(SERIAL_BAUD_RATE);
 
+    fileSystem->setup();
     wifi->setup();
     webServer->setup();
     homeAssistant->setup();

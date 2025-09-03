@@ -1,5 +1,4 @@
 #include "./WebServer.h"
-#include "../htmlFiles.h"
 #include "../control/Repository.h"
 #include "constants.h"
 #include "../utils/Helpers.h"
@@ -15,6 +14,7 @@ using namespace Control;
 #define VERSION_TAG "{VERSION}"
 
 extern Control::WebServer *webServer;
+extern FileSystem *fileSystem;
 
 void handlePost()
 {
@@ -44,11 +44,11 @@ void handlePost()
         repo->setMotorDirection(MOTOR1_DIR_PIN, motor1);
         repo->setMotorDirection(MOTOR2_DIR_PIN, motor2);
         repo->setEntityId(entityId);
-        webServer->getServer()->send(200, "text/html", response);
+        webServer->getServer()->send(200, "text/html", fileSystem->getConfirmPage());
     }
 }
 
-WebServer::WebServer() : _webServer(nullptr)
+WebServer::WebServer(FileSystem *fileSystem) : _webServer(nullptr), _fileSystem(fileSystem)
 {
     _webServer = new ESP8266WebServer(80);
 }
@@ -59,12 +59,13 @@ void WebServer::setup()
 
     _webServer->begin();
 
-    ESP8266WebServer *ws = _webServer;
-    _webServer->on("/", [ws]()
+    auto ws = _webServer;
+    auto fs = _fileSystem;
+    _webServer->on("/", [ws, fs]()
                    {
         auto r = Repository::getInstance();
         String output = String(VERSION) + String(" ") + String(Utils::Helpers::composeClientID());
-        String page = configPage;
+        String page = fs->getSettingsPage();
         page.replace(MOTOR1_BOOL, r->getMotorDirection(MOTOR1_DIR_PIN) == 0 ? "" : "checked");
         page.replace(MOTOR2_BOOL, r->getMotorDirection(MOTOR2_DIR_PIN) == 0 ? "" : "checked");
 

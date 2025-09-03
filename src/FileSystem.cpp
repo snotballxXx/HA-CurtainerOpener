@@ -1,0 +1,46 @@
+#include "./FileSystem.h"
+#include <LittleFS.h>
+
+FileSystem::FileSystem() : _settingsPage("Not Found"),
+                           _confirmPage("Not Found")
+{
+}
+
+void FileSystem::setup()
+{
+    if (!LittleFS.begin())
+    {
+        Serial.println("LittleFS mount failed");
+        return;
+    }
+
+    File file = LittleFS.open("/settings.html", "r");
+    if (!file)
+    {
+        Serial.println("Failed to open file /settings.html");
+    }
+    else
+    {
+        _settingsPage = file.readString(); // Reads entire file into a String
+        Serial.println("File content:");
+        Serial.println(_settingsPage);
+        file.close();
+    }
+
+    file = LittleFS.open("/confirm.html", "r");
+    if (!file)
+    {
+        Serial.println("Failed to open file /confirm.html");
+    }
+    else
+    {
+        _confirmPage = file.readString(); // Reads entire file into a String
+        Serial.println("File content:");
+        Serial.println(_confirmPage);
+        file.close();
+    }
+}
+
+void FileSystem::loop(unsigned long time)
+{
+}
