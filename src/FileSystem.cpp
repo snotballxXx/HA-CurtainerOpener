@@ -2,7 +2,7 @@
 #include <LittleFS.h>
 
 FileSystem::FileSystem() : _settingsPage("Not Found"),
-                           _confirmPage("Not Found")
+                           _discovery("Not Found")
 {
 }
 
@@ -27,16 +27,16 @@ void FileSystem::setup()
         file.close();
     }
 
-    file = LittleFS.open("/confirm.html", "r");
+    file = LittleFS.open("/discovery.json", "r");
     if (!file)
     {
-        Serial.println("Failed to open file /confirm.html");
+        Serial.println("Failed to open file /discovery.json");
     }
     else
     {
-        _confirmPage = file.readString(); // Reads entire file into a String
+        _discovery = file.readString(); // Reads entire file into a String
         Serial.println("File content:");
-        Serial.println(_confirmPage);
+        Serial.println(_discovery);
         file.close();
     }
 }

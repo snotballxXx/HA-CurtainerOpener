@@ -12,21 +12,23 @@
 #define STATE_TOPIC "home/{ID}/state"
 #define BASE_TOPIC "home"
 #define SERIAL_BAUD_RATE 115200
-#define VERSION "Version 1.0.0a - Curtain Control"
+#define VERSION "Version 1.0.0 - Curtain Control"
 
-#define MAGIC_NUMBER 23
+#define MAGIC_NUMBER 24
 #define MAGIC_NUMBER_ADDR 0
 #define MOTOR1_DIR_ADDR 1
 #define MOTOR2_DIR_ADDR 2
 #define STEP_COUNT_ADDR_HIGH 3
 #define STEP_COUNT_ADDR_LOW (STEP_COUNT_ADDR_HIGH + 1)
 #define STATE_ADDR 5
-#define ENTITY_ID_COUNT_ADDR 6
-#define ENTITY_ID_ADDR 7
+#define NUMBER_OF_MOTORS_ADDR 6
+#define ENTITY_ID_COUNT_ADDR 7
+#define ENTITY_ID_ADDR 8
 
 #define DEFAULT_VALUE_MOTOR1_DIR 1
 #define DEFAULT_VALUE_MOTOR2_DIR 1
 #define DEFAULT_VALUE_STEP_COUNT 3200
+#define DEFAULT_MOTOR_COUNT 2
 #define DEFAULT_ENTITY_ID "default_entity_id"
 
 #define MOTOR1_STEP_PIN D1

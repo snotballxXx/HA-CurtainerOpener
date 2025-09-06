@@ -7,6 +7,7 @@
 #include "../constants.h"
 #include "../utils/Helpers.h"
 #include "./Repository.h"
+#include <FileSystem.h>
 
 /*
 The state of a cover
@@ -22,39 +23,7 @@ Unknown: The state is not yet known.
 
 using namespace Control;
 
-String discoveryMessage = "{ \
-  \"device\": { \
-    \"identifiers\": [ \
-      \"{ID}\" \
-    ], \
-    \"name\": \"CurtainDevice\", \
-    \"model\": \"CURTAIN-200\", \
-    \"manufacturer\": \"DeviceCo\", \
-    \"sw_version\": \"1.0\" \
-  }, \
-  \"origin\": { \
-    \"name\": \"{ID}-curtain\" \
-  }, \
-  \"components\": { \
-     \"{ENTITY_ID}\": { \
-       \"platform\": \"cover\", \
-       \"device_class\": \"curtain\", \
-       \"name\": \"{ENTITY_ID}\", \
-       \"command_topic\": \"home/{ID}/command\", \
-       \"state_topic\": \"home/{ID}/state\", \
-       \"payload_open\": \"OPEN\", \
-       \"payload_close\": \"CLOSE\", \
-       \"payload_stop\": \"STOP\", \
-       \"state_open\": \"OPEN\", \
-       \"state_opening\": \"OPENING\", \
-       \"state_closed\": \"CLOSED\", \
-       \"state_closing\": \"CLOSING\", \
-       \"state_stopped\": \"STOPPED\", \
-       \"icon_template\": \"{% if is_state(this, 'open') %} mdi:curtains-closed {% else %} mdi:curtains {% endif %}\", \
-       \"unique_id\": \"{ID}-curtain\" \
-     } \
-  } \
-}";
+extern FileSystem *fileSystem;
 
 void callback(char *topic, byte *payload, unsigned int length, void *p)
 {
@@ -143,7 +112,7 @@ void HomeAssistantMqtt::reconnect()
       String topic = DISCOVERY_TOPIC;
       topic.replace("{ID}", _clientId);
 
-      String msg = discoveryMessage;
+      String msg = fileSystem->getDiscovery();
       msg.replace("{ID}", _clientId);
       msg.replace("{ENTITY_ID}", _entityId);
 

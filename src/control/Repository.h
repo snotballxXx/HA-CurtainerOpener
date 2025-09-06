@@ -11,6 +11,8 @@ namespace Control
         unsigned short _maxStepCount;
         State _initialState;
         String _entityId;
+        byte _numberOfMotors;
+
         Repository();
         
         public:
@@ -30,6 +32,9 @@ namespace Control
 
         String getEntityId() { return _entityId; }
         void setEntityId(String id);
+
+        byte getMotorCount() { return _numberOfMotors; }
+        void setMotorCount(byte count);
     };
 }
 #endif  //!__REPOSITORY__H__

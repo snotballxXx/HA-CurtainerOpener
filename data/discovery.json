@@ -1,0 +1,31 @@
+{
+  "components": {
+    "{ENTITY_ID}": {
+      "command_topic": "home/{ID}/command",
+      "device_class": "curtain",
+      "icon_template": "{% if is_state(this, 'open') %} mdi:curtains-closed {% else %} mdi:curtains {% endif %}",
+      "name": "{ENTITY_ID}",
+      "payload_close": "CLOSE",
+      "payload_open": "OPEN",
+      "payload_stop": "STOP",
+      "platform": "cover",
+      "state_closed": "CLOSED",
+      "state_closing": "CLOSING",
+      "state_open": "OPEN",
+      "state_opening": "OPENING",
+      "state_stopped": "STOPPED",
+      "state_topic": "home/{ID}/state",
+      "unique_id": "{ID}-curtain"
+    }
+  },
+  "device": {
+    "identifiers": ["{ID}"],
+    "manufacturer": "DeviceCo",
+    "model": "CURTAIN-200",
+    "name": "CurtainDevice-{ENTITY_ID}",
+    "sw_version": "1.0"
+  },
+  "origin": {
+    "name": "{ID}-curtain"
+  }
+}

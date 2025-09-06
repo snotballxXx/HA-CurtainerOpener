@@ -1,24 +1,113 @@
 <!DOCTYPE html>
 <html>
+  <!--
+Build LittleFs with:
+pio run --target buildfs
+
+Ctrl + Shift + P and select PlatformIO: New Terminal
+  -->
   <head>
-    <title>Motor Control Form</title>
-    <script>
-      function setHiddenValues() {
-        document.getElementById("hiddenMotor1").value = document.getElementById(
-          "motor1"
-        ).checked
-          ? 1
-          : 0;
-        document.getElementById("hiddenMotor2").value = document.getElementById(
-          "motor2"
-        ).checked
-          ? 1
-          : 0;
-      }
-    </script>
+    <title>Curtain - {ENTITY_ID}</title>
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M23 3H1V1H23V3M2 22H6C6 19 4 17 4 17C10 13 11 4 11 4H2V22M22 4H13C13 4 14 13 20 17C20 17 18 19 18 22H22V4Z' fill='%23007BFF'/%3E%3C/svg%3E"
+    />
+
     <style>
       body {
-        font-family: Arial, sans-serif;
+        font-family: sans-serif;
+        padding: 40px;
+        background-color: #ffffff;
+      }
+
+      form {
+        margin-bottom: 20px;
+      }
+
+      input[type="text"] {
+        padding: 8px;
+        width: 300px;
+        margin-right: 10px;
+      }
+
+      button {
+        background: #eee;
+        border: 1px solid #ccc;
+        padding: 10px 20px;
+        border-radius: 5px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.1s ease-in-out;
+        width: 200px;
+      }
+
+      .icon-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        background-color: #fb2c36;
+        margin-bottom: 20px;
+        margin-left: 50px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 15px;
+      }
+
+      .icon-button svg {
+        fill: currentColor;
+        width: 30px;
+        height: 30px;
+      }
+
+      button:active {
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+        background: #ddd;
+      }
+
+      button:disabled,
+      button[disabled] {
+        background-color: #cccccc;
+        color: #666666;
+        cursor: not-allowed;
+        box-shadow: none;
+        opacity: 0.6;
+      }
+
+      .toast {
+        position: fixed;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%) translateY(200px);
+        padding: 16px 24px;
+        border-radius: 6px;
+        color: #fff;
+        font-size: 16px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.5s ease;
+        z-index: 999;
+        min-width: 300px;
+        text-align: center;
+      }
+
+      .toast.show {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateX(-50%) translateY(0);
+      }
+
+      .toast.success {
+        background-color: #28a745;
+      }
+
+      .toast.error {
+        background-color: #dc3545;
       }
       /* Header styling */
       .header {
@@ -27,9 +116,10 @@
         left: 0;
         width: 100%;
         padding: 10px;
-        background-color: #f1f1f1;
+        background-color: #3ba0e3;
         text-align: left;
         box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+        color: #ffffff;
       }
       /* Flexbox container for the two columns */
       .container {
@@ -54,6 +144,37 @@
         font-size: 60px;
         font-weight: bold;
       }
+      .spinner {
+        border: 8px solid #f3f3f3; /* Light grey */
+        border-top: 8px solid #3498db; /* Blue */
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        animation: spin 1s linear infinite;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 9999;
+      }
+
+      .spinner {
+        display: none;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .indented {
+        margin-left: 30px; /* or padding-left: 30px */
+      }
+
       /* Footer styling */
       .footer {
         position: fixed;
@@ -61,68 +182,132 @@
         left: 0;
         width: 100%; /* Optional: Adjust width if needed */
         padding: 10px;
-        background-color: #f1f1f1;
+        background-color: #3ba0e3;
         text-align: left;
         box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.1);
+        color: #ffffff;
       }
     </style>
   </head>
   <body>
-    <div class="header center-title">ESP Curtain Control</div>
+    <div class="header center-title">Curtain Control - ({ENTITY_ID})</div>
     <div class="container">
       <!-- First column for local elements -->
       <div class="local-elements">
-        <h1>Motor Control</h1>
-        <label for="motor1">Motor1:</label>
-        <input
-          type="checkbox"
-          id="motor1"
-          name="motor1"
-          {MOTOR1_BOOL}
-        /><br /><br />
-
-        <label for="motor2">Motor2:</label>
-        <input
-          type="checkbox"
-          id="motor2"
-          name="motor2"
-          {MOTOR2_BOOL}
-        /><br /><br />
-
-        <form action="/configUpdate" method="POST" onsubmit="setHiddenValues()">
+        <h1>Settings</h1>
+        <div>
+          <label class="indented" for="motor1">Motor 1 Direction:</label>
           <input
-            type="hidden"
-            id="hiddenMotor1"
+            class="indented"
+            type="checkbox"
+            id="motor1"
             name="motor1"
-            value="{MOTOR1}"
-          />
+            {MOTOR1_BOOL}
+          /><br /><br />
+
+          <label class="indented" for="motor2">Motor 2 Direction:</label>
           <input
-            type="hidden"
-            id="hiddenMotor2"
+            class="indented"
+            type="checkbox"
+            id="motor2"
             name="motor2"
-            value="{MOTOR2}"
-          />
-
-          <label for="stepCount">Step Count (max 100000):</label>
-          <input
-            type="number"
-            id="stepCount"
-            name="stepCount"
-            max="100000"
-            min="1000"
-            value="{COUNT}"
+            {MOTOR2_BOOL}
           /><br /><br />
 
-          <label for="entity_id">Entity Id:</label>
-          <input
-            type="text"
-            id="entity_id"
-            name="entity_id"
-            value="{ENTITY_ID}"
-          /><br /><br />
+          <form id="formId">
+            <input
+              type="hidden"
+              id="hiddenMotor1"
+              name="motor1"
+              value="{MOTOR1}"
+            />
+            <input
+              type="hidden"
+              id="hiddenMotor2"
+              name="motor2"
+              value="{MOTOR2}"
+            />
 
-          <input type="submit" value="Submit" />
-        </form>
+            <label class="indented" for="stepCount"
+              >Step Count (max 100000):</label
+            >
+            <input
+              class="indented"
+              type="number"
+              id="stepCount"
+              name="stepCount"
+              max="100000"
+              min="1000"
+              value="{COUNT}"
+            /><br /><br />
+
+            <label class="indented" for="entity_id">Entity Id:</label>
+            <input
+              class="indented"
+              type="text"
+              id="entity_id"
+              name="entity_id"
+              value="{ENTITY_ID}"
+              required
+            /><br /><br />
+
+            <label class="indented" for="motorCount">Motor Count:</label>
+            <input
+              class="indented"
+              type="number"
+              id="motorCount"
+              name="motorCount"
+              value="{MOTOR_COUNT}"
+              max="2"
+              min="1"
+            /><br /><br />
+
+            <button id="submitButtonId" type="submit" class="icon-button">
+              <svg viewBox="0 0 24 24">
+                <g>
+                  <path
+                    d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"
+                  ></path>
+                </g>
+              </svg>
+              Update Config
+            </button>
+          </form>
+        </div>
+
+        <h1>Actions</h1>
+        <div>
+          <button id="openId" class="icon-button" onclick="onClick('OPEN')">
+            <svg viewBox="0 0 24 24">
+              <g>
+                <path
+                  d="M9,11H15V8L19,12L15,16V13H9V16L5,12L9,8V11M2,20V4H4V20H2M20,20V4H22V20H20Z"
+                ></path>
+              </g>
+            </svg>
+            Open
+          </button>
+        </div>
+        <div>
+          <button id="stopId" class="icon-button" onclick="onClick('STOP')">
+            <svg viewBox="0 0 24 24">
+              <g><path d="M18,18H6V6H18V18Z"></path></g>
+            </svg>
+            Stop
+          </button>
+        </div>
+        <div>
+          <button id="closeId" class="icon-button" onclick="onClick('CLOSE')">
+            <svg viewBox="0 0 24 24">
+              <g>
+                <path
+                  d="M13,20V4H15.03V20H13M10,20V4H12.03V20H10M5,8L9.03,12L5,16V13H2V11H5V8M20,16L16,12L20,8V11H23V13H20V16Z"
+                ></path>
+              </g>
+            </svg>
+            Close
+          </button>
+        </div>
       </div>
 
       <!-- Second column for iframe -->
@@ -136,8 +321,101 @@
       </div>
     </div>
 
+    <div id="toast" class="toast"></div>
+
+    <div id="spinner" class="spinner"></div>
+
     <footer class="footer">
       <h4>{VERSION}</h4>
     </footer>
+
+    <script>
+      let spinnerTimeout;
+      const form = document.getElementById("formId");
+      const toast = document.getElementById("toast");
+      const submitButton = document.getElementById("submitButtonId");
+
+      form.addEventListener("submit", function (e) {
+        e.preventDefault(); // Prevent default form submission
+        setHiddenValues();
+        submitButton.disabled = true;
+        showSpinnerWithDelay();
+        const formData = new FormData(form);
+        console.log(formData);
+        fetch("/configUpdate", {
+          method: "POST",
+          body: formData,
+        })
+          .then((response) => {
+            console.log(response);
+            if (response.ok) {
+              showToast("success", "Configuration updated successfully!");
+            } else {
+              showToast("error", "Update failed. Try again.");
+            }
+            submitButton.disabled = false;
+            hideSpinner();
+          })
+          .catch(() => {
+            showToast("error", "Network error. Please check your connection.");
+            submitButton.disabled = false;
+            hideSpinner();
+          });
+      });
+
+      function onClick(evt) {
+        console.log("onclick :" + evt);
+
+        showSpinnerWithDelay();
+        fetch("/actionUpdate", {
+          method: "POST",
+          body: evt,
+        })
+          .then((response) => {
+            console.log(response);
+            if (response.ok) {
+            }
+            hideSpinner();
+          })
+          .catch(() => {
+            hideSpinner();
+          });
+      }
+
+      function showToast(type, message) {
+        toast.className = `toast ${type} show`;
+        toast.textContent = message;
+
+        setTimeout(() => {
+          toast.classList.remove("show");
+        }, 3000);
+      }
+
+      function setHiddenValues() {
+        document.getElementById("hiddenMotor1").value = document.getElementById(
+          "motor1"
+        ).checked
+          ? 1
+          : 0;
+        document.getElementById("hiddenMotor2").value = document.getElementById(
+          "motor2"
+        ).checked
+          ? 1
+          : 0;
+      }
+
+      function showSpinnerWithDelay() {
+        // Start a 500ms timer to show the spinner
+        spinnerTimeout = setTimeout(() => {
+          document.getElementById("spinner").style.display = "block";
+        }, 500);
+      }
+
+      function hideSpinner() {
+        // Cancel the spinner if it's not shown yet
+        clearTimeout(spinnerTimeout);
+        document.getElementById("spinner").style.display = "none";
+      }
+    </script>
   </body>
 </html>

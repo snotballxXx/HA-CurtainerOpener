@@ -18,6 +18,7 @@ Repository::Repository()
         _maxStepCount = EEPROM.read(STEP_COUNT_ADDR_HIGH) << 8;
         _maxStepCount |= EEPROM.read(STEP_COUNT_ADDR_LOW);
         _initialState = (State)EEPROM.read(STATE_ADDR);
+        _numberOfMotors = EEPROM.read(NUMBER_OF_MOTORS_ADDR);
         auto entityIdCount = EEPROM.read(ENTITY_ID_COUNT_ADDR);
         _entityId = "";
         for (auto i = 0; i < entityIdCount;++i) 
@@ -32,6 +33,7 @@ Repository::Repository()
         setMaxStepCount(DEFAULT_VALUE_STEP_COUNT);
         setState(State::Calibrate);
         setEntityId(DEFAULT_ENTITY_ID);
+        setMotorCount(DEFAULT_MOTOR_COUNT);
         EEPROM.commit();
     }
 }
@@ -78,5 +80,12 @@ void Repository::setEntityId(String id)
 
     _entityId = id;
     EEPROM.write(ENTITY_ID_COUNT_ADDR, entityIdCount);
+    EEPROM.commit();
+}
+
+void Repository::setMotorCount(byte count)
+{
+    _numberOfMotors = count;
+    EEPROM.write(NUMBER_OF_MOTORS_ADDR, count);
     EEPROM.commit();
 }

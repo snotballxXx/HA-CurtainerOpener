@@ -46,10 +46,10 @@ curtains
 
 FileSystem *fileSystem = new FileSystem();
 Control::Wifi *wifi = new Control::Wifi();
-Control::WebServer *webServer = new Control::WebServer(fileSystem);
 Control::HomeAssistantMqtt *homeAssistant = new Control::HomeAssistantMqtt();
-Control::Ota *ota = new Control::Ota(webServer);
 Control::Controller *controller = new Control::Controller(homeAssistant);
+Control::WebServer *webServer = new Control::WebServer(fileSystem, controller);
+Control::Ota *ota = new Control::Ota(webServer);
 
 void setup()
 {

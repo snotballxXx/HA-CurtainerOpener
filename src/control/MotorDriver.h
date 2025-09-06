@@ -1,7 +1,7 @@
 #ifndef _CURTAIN_CONTROL_H
 #define _CURTAIN_CONTROL_H
 #include <Arduino.h>
-#include "../interfaces/IArduinoBase.h"
+#include "../interfaces/IMotor.h"
 #include "../control/State.h"
 
 namespace Interfaces
@@ -18,7 +18,7 @@ namespace Control
 {
     class DebounceSwitch;
 
-    class MotorDriver : public Interfaces::IAduninoBase
+    class MotorDriver : public Interfaces::IMotor
     {
         const int incCount = 1;
 
@@ -35,6 +35,7 @@ namespace Control
         String _name;
         bool _calibratingPriorToMove;
 
+        void moveCurtain();
     public:
         MotorDriver(
             int pinStep,
@@ -45,10 +46,10 @@ namespace Control
 
         virtual void loop(unsigned long time);
         virtual void setup();
-        State getTransistionState() { return _newState; }
-        State getState() { return _currentState; }
-        void setState(State controlState) { _newState = controlState; };
-        void moveCurtain();
+        virtual State getTransistionState() { return _newState; }
+        virtual State getState() { return _currentState; }
+        virtual void setState(State controlState) { _newState = controlState; };
+     
     };
 }
 

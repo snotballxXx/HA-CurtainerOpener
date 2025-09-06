@@ -7,7 +7,7 @@
 class FileSystem : public Interfaces::IAduninoBase
 {
     String _settingsPage;
-    String _confirmPage;
+    String _discovery;
 
     public:
     FileSystem();
@@ -16,7 +16,7 @@ class FileSystem : public Interfaces::IAduninoBase
     virtual void setup();
 
     String getSettingsPage() { return _settingsPage; }
-    String getConfirmPage() { return _confirmPage; }
+    String getDiscovery() { return _discovery; }
 };
 
 #endif //_FILE_SYSTEM_H_

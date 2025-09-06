@@ -3,6 +3,8 @@
 #include "../interfaces/IMessenger.h"
 #include <constants.h>
 #include "./Repository.h"
+#include "./DummyMotor.h"
+#include "../interfaces/IMotor.h"
 
 using namespace Control;
 
@@ -11,7 +13,11 @@ Controller::Controller(Interfaces::IMessenger *messenger) : _messenger(messenger
                                                             _pendingStateUpdate(true)
 {
     _motor1 = new MotorDriver(MOTOR1_STEP_PIN, MOTOR1_DIR_PIN, MOTOR1_ENABLE_PIN, END_STOP_SWITCH1, "Motor1");
-    _motor2 = new MotorDriver(MOTOR2_STEP_PIN, MOTOR2_DIR_PIN, MOTOR2_ENABLE_PIN, END_STOP_SWITCH2, "Motor2");
+
+    if (Repository::getInstance()->getMotorCount() == 2)
+        _motor2 = new MotorDriver(MOTOR2_STEP_PIN, MOTOR2_DIR_PIN, MOTOR2_ENABLE_PIN, END_STOP_SWITCH2, "Motor2");
+    else
+        _motor2 = new DummyMotor(_motor1);
 }
 
 void Controller::setup()

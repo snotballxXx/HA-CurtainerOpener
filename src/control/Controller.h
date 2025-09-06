@@ -9,6 +9,7 @@
 namespace Interfaces
 {
     class IMessenger;
+    class IMotor;
 }
 
 namespace Control
@@ -17,11 +18,12 @@ namespace Control
 
     class Controller : public Interfaces::IAduninoBase, public Interfaces::ITopicCallback
     {
-        MotorDriver *_motor1;
-        MotorDriver *_motor2;
+        Interfaces::IMotor *_motor1;
+        Interfaces::IMotor *_motor2;
         Interfaces::IMessenger *_messenger;
         State _currentState;
         bool _pendingStateUpdate;
+  
     public:
         Controller(Interfaces::IMessenger *messenger);
 
