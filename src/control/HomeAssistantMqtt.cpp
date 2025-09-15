@@ -24,8 +24,9 @@ Unknown: The state is not yet known.
 using namespace Control;
 
 extern FileSystem *fileSystem;
+extern HomeAssistantMqtt *homeAssistant;
 
-void callback(char *topic, byte *payload, unsigned int length, void *p)
+void callback(char *topic, byte *payload, unsigned int length)
 {
   String content;
   content.reserve(length);
@@ -33,7 +34,7 @@ void callback(char *topic, byte *payload, unsigned int length, void *p)
   for (unsigned int i = 0; i < length; i++)
     content += (char)payload[i];
 
-  ((HomeAssistantMqtt *)p)->invokeCallbacks(String(topic), content);
+  homeAssistant->invokeCallbacks(String(topic), content);
 }
 
 HomeAssistantMqtt::HomeAssistantMqtt()
@@ -47,7 +48,7 @@ void HomeAssistantMqtt::setup()
 
   _client->setBufferSize(3000);
   _client->setServer(MQTT_SERVER, 1883);
-  _client->setCallback(callback, (void *)this);
+  _client->setCallback(callback);
 
   _clientId = Utils::Helpers::composeClientID();
   _clientId.replace(':', '-');

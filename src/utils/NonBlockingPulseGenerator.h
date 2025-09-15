@@ -6,19 +6,19 @@ namespace Utils
 {
     class NonBlockingPulseGenerator
     {
+        int _pin;
         uint64_t _onDuration;
         uint64_t _offDuration;
+        bool _active;
         uint64_t _offTime;
         uint64_t _offActiveTime;
-        bool _active;
-        int _pin;
 
     public:
         NonBlockingPulseGenerator(int outputPin, uint64_t microsOn, uint64_t microsOff);
 
-        void trigger();
+        void triggerPulse();
 
-        bool update();
+        bool pulseActive();
     };
 }
 

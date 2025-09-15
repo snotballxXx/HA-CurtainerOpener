@@ -3,8 +3,6 @@
 
 using namespace Control;
 
-// DebounceSwitch* DebounceSwitch::instance;
-
 DebounceSwitch::DebounceSwitch(int pin, unsigned long debounceDelay, int mode, String name) : _inputPin(pin),
                                                                                               _debounceDelay(debounceDelay),
                                                                                               _lastDebounceTime(0),

@@ -21,7 +21,7 @@ Repository::Repository()
         _numberOfMotors = EEPROM.read(NUMBER_OF_MOTORS_ADDR);
         auto entityIdCount = EEPROM.read(ENTITY_ID_COUNT_ADDR);
         _entityId = "";
-        for (auto i = 0; i < entityIdCount;++i) 
+        for (uint8_t i = 0; i < entityIdCount; ++i)
             _entityId += (char)EEPROM.read(ENTITY_ID_ADDR + i);
     }
     else
@@ -73,7 +73,7 @@ void Repository::setState(State state)
 void Repository::setEntityId(String id)
 {
     auto entityIdCount = id.length();
-    for (auto i = 0; i < entityIdCount;++i) 
+    for (uint8_t i = 0; i < entityIdCount; ++i)
     {
         EEPROM.write(ENTITY_ID_ADDR + i, id[i]);
     }

@@ -28,6 +28,8 @@ void Controller::setup()
 
     if (_motor1->getTransistionState() == Calibrate || _motor2->getTransistionState() == Calibrate)
         _currentState = Calibrate;
+
+    pinMode(PUSH_BUTTON, INPUT);
 }
 
 void Controller::loop(unsigned long time)
@@ -53,6 +55,15 @@ void Controller::loop(unsigned long time)
     {
         _currentState = motor1State;
         sendStateUpdate();
+    }
+
+    auto state = digitalRead(PUSH_BUTTON);
+    if (state == HIGH && (_currentState == State::Open || _currentState == State::Closed))
+    {
+        auto newState = _currentState == State::Open ? CMD_CLOSE : CMD_OPEN;
+        Serial.print("Request to change state via button press, changing to ");
+        Serial.println(newState);
+        messageReceived("", newState);
     }
 }
 

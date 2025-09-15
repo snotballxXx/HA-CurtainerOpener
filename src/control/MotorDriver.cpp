@@ -27,7 +27,7 @@ MotorDriver::MotorDriver(
 
 void MotorDriver::setup()
 {
-    _pulseGenerator = new Utils::NonBlockingPulseGenerator(_pinStep, 1000, 1000);
+    _pulseGenerator = new Utils::NonBlockingPulseGenerator(_pinStep, 1500, 2500);
     _switch = new DebounceSwitch(_pinStopSwitch, 100L, LOW, _name);
 
     pinMode(_pinDir, OUTPUT);
@@ -36,11 +36,7 @@ void MotorDriver::setup()
 
     if (!_switch->isTriggered())
     {
-        auto storedState = Repository::getInstance()->getInitalState();
-        // if (storedState == State::Closing || storedState == State::Opening || storedState == State::PendingChange)
         _newState = State::Calibrate;
-        // else
-        //_newState = storedState;
         Serial.println("Calibration mode active " + _name);
     }
     else
@@ -49,7 +45,7 @@ void MotorDriver::setup()
 
 void MotorDriver::loop(unsigned long time)
 {
-    auto pulseComplete = !_pulseGenerator->update();
+    auto pulseComplete = !_pulseGenerator->pulseActive();
 
     auto switchClosed = _switch->isTriggered();
     if (_arrivedHome)
@@ -113,10 +109,12 @@ void MotorDriver::moveCurtain()
         return;
     }
 
-    _pulseGenerator->trigger();
+    _pulseGenerator->triggerPulse();
 
     _stepCount += (((_currentState == State::Closing || _currentState == State::Calibrate) ? -1 : 1) * incCount);
 
+    Serial.print("Moving ");
+    Serial.println(_stepCount);
     if (_stepCount >= repo->getMaxStepCount())
     {
         Serial.println("Reached open position " + _name);

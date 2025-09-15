@@ -6,13 +6,15 @@ using namespace Utils;
 NonBlockingPulseGenerator::NonBlockingPulseGenerator(int outputPin, uint64_t microsOn, uint64_t microsOff) : _pin(outputPin),
                                                                                                              _onDuration(microsOn),
                                                                                                              _offDuration(microsOff),
-                                                                                                             _active(false)
+                                                                                                             _active(false),
+                                                                                                             _offTime(0),
+                                                                                                             _offActiveTime(0)
 {
     pinMode(_pin, OUTPUT);
     digitalWrite(_pin, LOW);
 }
 
-void NonBlockingPulseGenerator::trigger()
+void NonBlockingPulseGenerator::triggerPulse()
 {
     digitalWrite(_pin, HIGH);
     auto startTime = micros64();
@@ -21,7 +23,7 @@ void NonBlockingPulseGenerator::trigger()
     _active = true;
 }
 
-bool NonBlockingPulseGenerator::update()
+bool NonBlockingPulseGenerator::pulseActive()
 {
     if (_active)
     {

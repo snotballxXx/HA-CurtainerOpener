@@ -66,7 +66,6 @@ void setup()
 void loop()
 {
     unsigned long now = millis();
-
     wifi->loop(now);
     webServer->loop(now);
     homeAssistant->loop(now);
