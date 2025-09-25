@@ -15,14 +15,15 @@ using namespace Control;
 #define MOTOR_COUNT "{MOTOR_COUNT}"
 #define VERSION_TAG "{VERSION}"
 
-extern Control::WebServer *webServer;
+extern WebServer *webServer;
 extern FileSystem *fileSystem;
+extern Interfaces::ILogger *logger;
 
 void handleActionPost()
 {
     auto body = webServer->getServer()->arg("plain"); // Gets the raw body text
-    Serial.println("Received body:");
-    Serial.println(body);
+    logger->sendLog("Received body:");
+    logger->sendLog(body);
 
     if (body == CMD_OPEN)
     {
@@ -43,7 +44,7 @@ void handleActionPost()
     webServer->getServer()->send(400, "text/html", "FAILED");
 }
 
-void handlePost()
+void handleSettingsPost()
 {
     if (webServer->getServer()->hasArg("motor1") &&
         webServer->getServer()->hasArg("motor2") &&
@@ -51,13 +52,25 @@ void handlePost()
         webServer->getServer()->hasArg("entity_id") &&
         webServer->getServer()->hasArg("motorCount"))
     {
-        Serial.println("Received POST:SUCCESS");
-        auto motor1 = webServer->getServer()->arg("motor1") == "1" ? 1 : 0;
-        auto motor2 = webServer->getServer()->arg("motor2") == "1" ? 1 : 0;
-        auto stepCount = webServer->getServer()->arg("stepCount").toInt();
-        auto entityId = webServer->getServer()->arg("entity_id");
-        auto motorCount = webServer->getServer()->arg("motorCount").toInt();
+        logger->sendLog("Received POST:");
+        auto msg = String();
 
+        auto motor1 = webServer->getServer()->arg("motor1") == "1" ? 1 : 0;
+        msg.concat("motor1=" + webServer->getServer()->arg("motor1"));
+        msg.concat("\n");
+        auto motor2 = webServer->getServer()->arg("motor2") == "1" ? 1 : 0;
+        msg.concat("motor2=" + webServer->getServer()->arg("motor2"));
+        msg.concat("\n");
+        auto stepCount = webServer->getServer()->arg("stepCount").toInt();
+        msg.concat("stepCount=" + webServer->getServer()->arg("stepCount"));
+        msg.concat("\n");
+        auto entityId = webServer->getServer()->arg("entity_id");
+        msg.concat("entity_id=" + entityId);
+        msg.concat("\n");
+        auto motorCount = webServer->getServer()->arg("motorCount").toInt();
+        msg.concat("motorCount=" + webServer->getServer()->arg("motorCount"));
+
+        logger->sendLog(msg);
         auto repo = Repository::getInstance();
         repo->setMaxStepCount(stepCount);
         repo->setMotorDirection(MOTOR1_DIR_PIN, motor1);
@@ -68,16 +81,46 @@ void handlePost()
     }
     else
     {
-        Serial.println("Received POST: FAILED");
+        logger->sendLog("Received POST: FAILED");
         webServer->getServer()->send(400, "text/html", "FAILED");
+    }
+}
+
+int parseSliderValue(String json)
+{
+    //{"slider":"994"}
+    int start = json.indexOf(":");
+    int end = json.indexOf("}");
+    if (start != -1 && end != -1)
+    {
+        auto value = json.substring(start + 2, end - 1);
+        logger->sendLog("Received: " + value);
+        return value.toInt();
+    }
+    return -1;
+}
+
+void handleWebSocketMessage(uint8_t client_num, WStype_t type, uint8_t *payload, size_t length)
+{
+    if (type == WStype_TEXT)
+    {
+        auto msg = String((char *)payload);
+
+        if (msg.startsWith("{") && msg.endsWith("}"))
+        {
+            int sliderPos = parseSliderValue(msg);
+            webServer->setSlider(sliderPos);
+        }
     }
 }
 
 WebServer::WebServer(FileSystem *fileSystem, Interfaces::ITopicCallback *actionCallback) : _webServer(nullptr),
                                                                                            _fileSystem(fileSystem),
-                                                                                           _actionCallback(actionCallback)
+                                                                                           _actionCallback(actionCallback),
+                                                                                           _slider(1)
 {
     _webServer = new ESP8266WebServer(80);
+    _webSocket = new WebSocketsServer(81);
 }
 
 void WebServer::setup()
@@ -106,12 +149,32 @@ void WebServer::setup()
         page.replace(VERSION_TAG, output);      
         ws->send(200, "text/html", page); });
 
-    _webServer->on("/configUpdate", HTTP_POST, handlePost);
+    _webServer->on("/messages", [ws, fs]()
+                   {
+        auto r = Repository::getInstance();
+        String output = String(VERSION) + String(" ") + String(Utils::Helpers::composeClientID());
+        String page = fs->getMessagesPage();
+
+        page.replace(ENTITY_ID, String(r->getEntityId()));
+        page.replace(VERSION_TAG, output);      
+        ws->send(200, "text/html", page); });
+
+    _webServer->on("/configUpdate", HTTP_POST, handleSettingsPost);
 
     _webServer->on("/actionUpdate", HTTP_POST, handleActionPost);
+
+    _webSocket->onEvent(handleWebSocketMessage);
+
+    _webSocket->begin();
 }
 
 void WebServer::loop(unsigned long time)
 {
     _webServer->handleClient();
+    _webSocket->loop();
+}
+
+void WebServer::sendLog(const String &txt)
+{
+    _webSocket->broadcastTXT(txt.c_str());
 }

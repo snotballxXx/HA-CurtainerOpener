@@ -50,6 +50,7 @@ Control::HomeAssistantMqtt *homeAssistant = new Control::HomeAssistantMqtt();
 Control::Controller *controller = new Control::Controller(homeAssistant);
 Control::WebServer *webServer = new Control::WebServer(fileSystem, controller);
 Control::Ota *ota = new Control::Ota(webServer);
+Interfaces::ILogger *logger = webServer;
 
 void setup()
 {
@@ -59,8 +60,8 @@ void setup()
     wifi->setup();
     webServer->setup();
     homeAssistant->setup();
-    ota->setup();
     controller->setup();
+    ota->setup();
 }
 
 void loop()
@@ -69,6 +70,6 @@ void loop()
     wifi->loop(now);
     webServer->loop(now);
     homeAssistant->loop(now);
-    controller->loop(now);
     ota->loop(now);
+    controller->loop(now);
 }

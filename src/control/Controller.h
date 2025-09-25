@@ -23,7 +23,6 @@ namespace Control
         Interfaces::IMessenger *_messenger;
         State _currentState;
         bool _pendingStateUpdate;
-  
     public:
         Controller(Interfaces::IMessenger *messenger);
 

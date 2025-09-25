@@ -2,6 +2,7 @@
 #define _HELPERS_H_
 
 #include <StreamString.h>
+#include "./control/State.h"
 
 namespace Utils
 {
@@ -11,6 +12,8 @@ namespace Utils
         static String composeClientID();
 
         static String getValue(String data, char separator, int index);
+
+        static String stateToString(Control::State state);
     };
 }
 

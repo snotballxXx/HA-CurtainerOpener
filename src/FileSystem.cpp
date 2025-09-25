@@ -2,7 +2,8 @@
 #include <LittleFS.h>
 
 FileSystem::FileSystem() : _settingsPage("Not Found"),
-                           _discovery("Not Found")
+                           _discovery("Not Found"),
+                           _messagesPage("Not Found")
 {
 }
 
@@ -22,8 +23,17 @@ void FileSystem::setup()
     else
     {
         _settingsPage = file.readString(); // Reads entire file into a String
-        Serial.println("File content:");
-        Serial.println(_settingsPage);
+        file.close();
+    }
+
+    file = LittleFS.open("/message.html", "r");
+    if (!file)
+    {
+        Serial.println("Failed to open file /message.html");
+    }
+    else
+    {
+        _messagesPage = file.readString(); // Reads entire file into a String
         file.close();
     }
 
@@ -35,8 +45,6 @@ void FileSystem::setup()
     else
     {
         _discovery = file.readString(); // Reads entire file into a String
-        Serial.println("File content:");
-        Serial.println(_discovery);
         file.close();
     }
 }

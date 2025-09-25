@@ -1,7 +1,10 @@
 #include <Arduino.h>
 #include "./DebounceSwitch.h"
+#include <interfaces/ILogger.h>
 
 using namespace Control;
+
+extern Interfaces::ILogger *logger;
 
 DebounceSwitch::DebounceSwitch(int pin, unsigned long debounceDelay, int mode, String name) : _inputPin(pin),
                                                                                               _debounceDelay(debounceDelay),
@@ -24,8 +27,7 @@ bool DebounceSwitch::isTriggered()
     {
         _lastDebounceTime = time;
         _currentState = state;
-        Serial.print("Switch triggered on " + _name + " ");
-        Serial.println(_currentState == _mode);
+        logger->sendLog("Switch triggered on " + _name + " now " + (_currentState == _mode ? "Closed" : "Open"));
     }
 
     return _currentState == _mode;

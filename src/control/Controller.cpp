@@ -5,8 +5,11 @@
 #include "./Repository.h"
 #include "./DummyMotor.h"
 #include "../interfaces/IMotor.h"
+#include <interfaces/ILogger.h>
 
 using namespace Control;
+
+extern Interfaces::ILogger *logger;
 
 Controller::Controller(Interfaces::IMessenger *messenger) : _messenger(messenger),
                                                             _currentState(State::Stopped),
@@ -61,8 +64,9 @@ void Controller::loop(unsigned long time)
     if (state == HIGH && (_currentState == State::Open || _currentState == State::Closed))
     {
         auto newState = _currentState == State::Open ? CMD_CLOSE : CMD_OPEN;
-        Serial.print("Request to change state via button press, changing to ");
-        Serial.println(newState);
+        String msg = String("Request to change state via button press, changing to ");
+        msg.concat((_currentState == State::Open ? "CMD_CLOSE" : "CMD_OPEN"));
+        logger->sendLog(msg);
         messageReceived("", newState);
     }
 }
@@ -72,19 +76,19 @@ void Controller::messageReceived(const String &topic, const String &payload)
     _pendingStateUpdate = true;
     if (String(CMD_OPEN) == payload)
     {
-        Serial.println("Request to open");
+        logger->sendLog("Request to open");
         _currentState = State::Opening;
         sendStateUpdate();
     }
     else if (String(CMD_STOP) == payload)
     {
-        Serial.println("Request to stop");
+        logger->sendLog("Request to stop");
         _currentState = State::Stopped;
         sendStateUpdate();
     }
     else if (String(CMD_CLOSE) == payload)
     {
-        Serial.println("Request to close");
+        logger->sendLog("Request to close");
         _currentState = State::Closing;
         sendStateUpdate();
     }
@@ -132,6 +136,6 @@ void Controller::sendStateUpdate()
             break;
         }
 
-        Serial.println("State change to " + msg);
+        logger->sendLog("State change to " + msg);
     }
 }

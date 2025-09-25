@@ -8,6 +8,7 @@ class FileSystem : public Interfaces::IAduninoBase
 {
     String _settingsPage;
     String _discovery;
+    String _messagesPage;
 
     public:
     FileSystem();
@@ -16,6 +17,7 @@ class FileSystem : public Interfaces::IAduninoBase
     virtual void setup();
 
     String getSettingsPage() { return _settingsPage; }
+    String getMessagesPage() { return _messagesPage; }
     String getDiscovery() { return _discovery; }
 };
 

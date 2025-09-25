@@ -8,6 +8,7 @@
 #include "../utils/Helpers.h"
 #include "./Repository.h"
 #include <FileSystem.h>
+#include <interfaces/ILogger.h>
 
 /*
 The state of a cover
@@ -22,7 +23,7 @@ Unknown: The state is not yet known.
 */
 
 using namespace Control;
-
+extern Interfaces::ILogger *logger;
 extern FileSystem *fileSystem;
 extern HomeAssistantMqtt *homeAssistant;
 
@@ -71,8 +72,8 @@ void HomeAssistantMqtt::sendMessage(const String &topic, const String &msg)
   {
     String tmp = topic;
     tmp.replace("{ID}", _clientId);
-    Serial.println("Request to send on " + tmp);
-    Serial.println("Publish on " + tmp + " with message " + msg);
+    logger->sendLog("Request to send on " + tmp);
+    logger->sendLog("Publish on " + tmp + " with message " + msg);
     _client->publish(tmp.c_str(), msg.c_str(), true);
   }
 }
@@ -81,17 +82,13 @@ void HomeAssistantMqtt::subscribe(const String &topic, Interfaces::ITopicCallbac
 {
   String tmp(topic);
   tmp.replace("{ID}", _clientId);
-  Serial.println("Subscribed to " + tmp);
+  logger->sendLog("Subscribed to " + tmp);
   _callbacks.insert(std::pair<String, Interfaces::ITopicCallback *>(tmp, callback));
 }
 
 void HomeAssistantMqtt::invokeCallbacks(const String &topic, const String &payload)
 {
-  Serial.print("Message arrived [");
-  Serial.print(topic);
-  Serial.print("] ");
-  Serial.print(": ");
-  Serial.println(payload);
+  logger->sendLog("Message arrived [" + topic + "]: " + payload);
 
   auto range = _callbacks.equal_range(topic);
 
@@ -104,12 +101,12 @@ void HomeAssistantMqtt::reconnect()
   // Loop until we're reconnected
   while (!_client->connected())
   {
-    Serial.print("Attempting MQTT connection...");
+    logger->sendLog("Attempting MQTT connection...");
 
     // Attempt to connect
     if (_client->connect(_clientId.c_str(), MQ_USER, MQ_PASSWORD))
     {
-      Serial.println("connected");
+      logger->sendLog("connected");
       String topic = DISCOVERY_TOPIC;
       topic.replace("{ID}", _clientId);
 
@@ -117,7 +114,7 @@ void HomeAssistantMqtt::reconnect()
       msg.replace("{ID}", _clientId);
       msg.replace("{ENTITY_ID}", _entityId);
 
-      Serial.println("Message published to topic (2k) '" + topic + "' :" + msg);
+      logger->sendLog("Message published to topic (2k) '" + topic + "' :" + msg);
       // Once connected, publish a discovery message
       _client->publish(topic.c_str(), msg.c_str(), true);
 
@@ -129,11 +126,6 @@ void HomeAssistantMqtt::reconnect()
     }
     else
     {
-      Serial.print("failed, rc=");
-      Serial.print(_client->state());
-      Serial.print(" wifi=");
-      Serial.print(WiFi.status());
-      Serial.println(" try again in 5 seconds");
       // Wait 5 seconds before retrying
       delay(5000);
     }

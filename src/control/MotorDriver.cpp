@@ -4,8 +4,12 @@
 #include "../constants.h"
 #include "./DebounceSwitch.h"
 #include "../utils/NonBlockingPulseGenerator.h"
+#include "../utils/Helpers.h"
+#include <interfaces/ILogger.h>
 
 using namespace Control;
+
+extern Interfaces::ILogger *logger;
 
 MotorDriver::MotorDriver(
     int pinStep,
@@ -27,7 +31,8 @@ MotorDriver::MotorDriver(
 
 void MotorDriver::setup()
 {
-    _pulseGenerator = new Utils::NonBlockingPulseGenerator(_pinStep, 1500, 2500);
+    //_pulseGenerator = new Utils::NonBlockingPulseGenerator(_pinStep, 1500, 50000);
+    _pulseGenerator = new Utils::NonBlockingPulseGenerator(_pinStep, 1500, 1000);
     _switch = new DebounceSwitch(_pinStopSwitch, 100L, LOW, _name);
 
     pinMode(_pinDir, OUTPUT);
@@ -37,7 +42,7 @@ void MotorDriver::setup()
     if (!_switch->isTriggered())
     {
         _newState = State::Calibrate;
-        Serial.println("Calibration mode active " + _name);
+        logger->sendLog("Calibration mode active " + _name);
     }
     else
         _arrivedHome = true;
@@ -50,7 +55,6 @@ void MotorDriver::loop(unsigned long time)
     auto switchClosed = _switch->isTriggered();
     if (_arrivedHome)
     {
-        Serial.println("Switch Triggered, now closed " + _name);
         _stepCount = 0;
         _arrivedHome = false;
         _currentState = _newState = State::Closed;
@@ -59,6 +63,7 @@ void MotorDriver::loop(unsigned long time)
         {
             _newState = State::Opening;
             _calibratingPriorToMove = false;
+            logger->sendLog("Calibration prior to move complete, now opening");
         }
     }
 
@@ -71,11 +76,13 @@ void MotorDriver::loop(unsigned long time)
             _calibratingPriorToMove = true;
             _currentState = State::Calibrate;
             _newState = State::PendingChange;
+            logger->sendLog("Open request, switch is open so going to calibrate closing prior to opening");
         }
         else
         {
             _currentState = _newState;
             _newState = State::PendingChange;
+            logger->sendLog("Initiating state change " + Utils::Helpers::stateToString(_currentState));
         }
         digitalWrite(_pinEnable, LOW);
     }
@@ -113,17 +120,18 @@ void MotorDriver::moveCurtain()
 
     _stepCount += (((_currentState == State::Closing || _currentState == State::Calibrate) ? -1 : 1) * incCount);
 
-    Serial.print("Moving ");
-    Serial.println(_stepCount);
+    if (_stepCount % 500 == 0)
+        logger->sendLog("Moving " + _name + " " + _stepCount);
+        
     if (_stepCount >= repo->getMaxStepCount())
     {
-        Serial.println("Reached open position " + _name);
+        logger->sendLog("Reached open position " + _name);
         _newState = State::Open;
     }
 
     if (_stepCount < -500 && _currentState != State::Calibrate)
     {
-        Serial.println("Soft stop due to negative count " + _name);
+        logger->sendLog("Soft stop due to negative count" + _name);
         _arrivedHome = true;
     }
 }

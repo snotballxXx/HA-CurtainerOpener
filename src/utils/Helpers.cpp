@@ -33,3 +33,26 @@ String Helpers::getValue(String data, char separator, int index)
 
     return found > index ? data.substring(strIndex[0], strIndex[1]) : "";
 }
+
+String Helpers::stateToString(Control::State state)
+{
+    switch (state)
+    {
+    case Control::Open:
+        return "Open";
+    case Control::Opening:
+        return "Opening";
+    case Control::Closing:
+        return "Closing";
+    case Control::Closed:
+        return "Closed";
+    case Control::Stopped:
+        return "Stopped";
+    case Control::PendingChange:
+        return "PendingChange";
+    case Control::Calibrate:
+        return "Calibrate";
+    default:
+        return "";
+    }
+}
