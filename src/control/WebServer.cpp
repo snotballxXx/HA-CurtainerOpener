@@ -3,6 +3,7 @@
 #include "constants.h"
 #include "../utils/Helpers.h"
 #include "../interfaces/ITopicCallback.h"
+#include "TimeServer.h"
 
 using namespace Control;
 
@@ -18,6 +19,7 @@ using namespace Control;
 extern WebServer *webServer;
 extern FileSystem *fileSystem;
 extern Interfaces::ILogger *logger;
+extern Interfaces::ITimeServer *timeServer;
 
 void handleActionPost()
 {
@@ -176,5 +178,10 @@ void WebServer::loop(unsigned long time)
 
 void WebServer::sendLog(const String &txt)
 {
-    _webSocket->broadcastTXT(txt.c_str());
+    Serial.println(txt);
+    if (_webSocket->connectedClients() != 0)
+    {
+        String msg(timeServer->getTimeAsString(millis()) + " " + txt);
+        _webSocket->broadcastTXT(msg.c_str());
+    }
 }

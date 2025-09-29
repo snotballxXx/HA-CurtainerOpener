@@ -95,10 +95,7 @@ void MotorDriver::loop(unsigned long time)
         digitalWrite(_pinEnable, HIGH);
     }
 
-    if ((_currentState == State::Closing || _currentState == State::Calibrate) && pulseComplete)
-        moveCurtain();
-
-    if (_currentState == State::Opening && pulseComplete)
+    if ((_currentState == State::Closing || _currentState == State::Calibrate || _currentState == State::Opening) && pulseComplete)
         moveCurtain();
 }
 

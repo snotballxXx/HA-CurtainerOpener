@@ -13,6 +13,8 @@
 #define BASE_TOPIC "home"
 #define SERIAL_BAUD_RATE 115200
 #define VERSION "Version 1.0.0 - Curtain Control"
+#define TIME_SERVER_TOPIC "time/update"
+#define TIME_SERVER_TOPIC_REQ "time/request"
 
 #define MAGIC_NUMBER 24
 #define MAGIC_NUMBER_ADDR 0

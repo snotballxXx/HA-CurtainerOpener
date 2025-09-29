@@ -122,6 +122,7 @@ void HomeAssistantMqtt::reconnect()
       {
         _client->unsubscribe(it->first.c_str());
         _client->subscribe(it->first.c_str());
+        logger->sendLog("Subscribing to " + it->first);
       }
     }
     else

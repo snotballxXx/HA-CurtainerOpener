@@ -43,6 +43,8 @@ curtains
 #include "./control/Repository.h"
 #include "constants.h"
 #include "FileSystem.h"
+#include "control/TimeServer.h"
+#include "control/TimeServer.h"
 
 FileSystem *fileSystem = new FileSystem();
 Control::Wifi *wifi = new Control::Wifi();
@@ -51,6 +53,7 @@ Control::Controller *controller = new Control::Controller(homeAssistant);
 Control::WebServer *webServer = new Control::WebServer(fileSystem, controller);
 Control::Ota *ota = new Control::Ota(webServer);
 Interfaces::ILogger *logger = webServer;
+Interfaces::ITimeServer *timeServer = new Control::TimeServer(homeAssistant);
 
 void setup()
 {
@@ -62,6 +65,7 @@ void setup()
     homeAssistant->setup();
     controller->setup();
     ota->setup();
+    timeServer->setup();
 }
 
 void loop()
@@ -72,4 +76,5 @@ void loop()
     homeAssistant->loop(now);
     ota->loop(now);
     controller->loop(now);
+    timeServer->loop(now);
 }
