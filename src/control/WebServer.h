@@ -4,31 +4,34 @@
 #include "../interfaces/IWebServer.h"
 #include <ESP8266WebServer.h>
 #include "./FileSystem.h"
-#include <interfaces/ITopicCallback.h>
+#include "interfaces/ITopicCallback.h"
+#include "interfaces/IMessenger.h"
 #include <WebSocketsServer.h>
 
 namespace Control
 {
     class WebServer : public Interfaces::IWebServer
     {
-        ESP8266WebServer *_webServer;
-        WebSocketsServer *_webSocket;
-        FileSystem *_fileSystem;
-        Interfaces::ITopicCallback *_actionCallback;
-        int _slider;
+        ESP8266WebServer*           _webServer;
+        WebSocketsServer*           _webSocket;
+        FileSystem*                 _fileSystem;
+        Interfaces::ITopicCallback* _actionCallback;
+        int                         _slider;
+        Interfaces::IMessenger*     _messenger;
 
-    public:
-        WebServer(FileSystem *fileSystem, Interfaces::ITopicCallback *actionCallback);
+       public:
+        WebServer(FileSystem* fileSystem, Interfaces::ITopicCallback* actionCallback,
+                  Interfaces::IMessenger* messenger);
         virtual void loop(unsigned long time);
         virtual void setup();
 
-        virtual ESP8266WebServer *getServer() { return _webServer; };
-        virtual Interfaces::ITopicCallback *getCallback() { return _actionCallback; }
-        virtual void sendLog(const String &txt);
+        virtual ESP8266WebServer*           getServer() { return _webServer; };
+        virtual Interfaces::ITopicCallback* getCallback() { return _actionCallback; }
+        virtual void                        sendLog(const String& txt);
 
-        virtual int getSlider() { return _slider; }
+        virtual int  getSlider() { return _slider; }
         virtual void setSlider(int value) { _slider = value; }
     };
-}
+}  // namespace Control
 
-#endif //!_WEBSERVER_H_
+#endif  //!_WEBSERVER_H_

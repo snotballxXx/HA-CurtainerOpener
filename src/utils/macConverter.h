@@ -7,14 +7,14 @@ namespace Utils
 {
     String macToStr(const uint8_t* mac)
     {
-      String result;
-      for (int i = 0; i < 6; ++i) {
-        result += String(mac[i], 16);
-        if (i < 5)
-          result += ':';
-      }
-      return result;
+        String result;
+        for (int i = 0; i < 6; ++i)
+        {
+            result += String(mac[i], 16);
+            if (i < 5) result += ':';
+        }
+        return result;
     }
-}
+}  // namespace Utils
 
-#endif //_MAC_CONVERTER_H_
+#endif  //_MAC_CONVERTER_H_

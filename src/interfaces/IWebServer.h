@@ -9,13 +9,13 @@ namespace Interfaces
 {
     class IWebServer : public IAduninoBase, public ILogger
     {
-    public:
-        virtual ESP8266WebServer *getServer() = 0;
-        virtual Interfaces::ITopicCallback *getCallback() = 0;
+       public:
+        virtual ESP8266WebServer*           getServer()   = 0;
+        virtual Interfaces::ITopicCallback* getCallback() = 0;
 
-        virtual int getSlider() = 0;
+        virtual int  getSlider()          = 0;
         virtual void setSlider(int value) = 0;
     };
-}
+}  // namespace Interfaces
 
-#endif //!_IWEBSERVER_H_
+#endif  //!_IWEBSERVER_H_

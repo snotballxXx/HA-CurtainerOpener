@@ -5,10 +5,7 @@
 
 using namespace Control;
 
-Ota::Ota(Interfaces::IWebServer* webserver) :
-_webserver(webserver)
-{
-}
+Ota::Ota(Interfaces::IWebServer* webserver) : _webserver(webserver) {}
 
 void Ota::setup()
 {

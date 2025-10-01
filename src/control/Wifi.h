@@ -6,10 +6,10 @@ namespace Control
 {
     class Wifi : public Interfaces::IWifi
     {
-        public:
+       public:
         virtual void loop(unsigned long time);
         virtual void setup();
     };
-}
+}  // namespace Control
 
 #endif  //!_WIFI_H_

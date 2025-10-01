@@ -5,9 +5,9 @@ namespace Interfaces
 {
     class IDebounceSwitchCallback
     {
-        public:
+       public:
         virtual void switchTrigger(bool state) = 0;
     };
-}
+}  // namespace Interfaces
 
 #endif

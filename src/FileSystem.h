@@ -10,9 +10,9 @@ class FileSystem : public Interfaces::IAduninoBase
     String _discovery;
     String _messagesPage;
 
-    public:
+   public:
     FileSystem();
-    
+
     virtual void loop(unsigned long time);
     virtual void setup();
 
@@ -21,4 +21,4 @@ class FileSystem : public Interfaces::IAduninoBase
     String getDiscovery() { return _discovery; }
 };
 
-#endif //_FILE_SYSTEM_H_
+#endif  //_FILE_SYSTEM_H_

@@ -17,9 +17,9 @@ String Helpers::composeClientID()
 
 String Helpers::getValue(String data, char separator, int index)
 {
-    int found = 0;
+    int found      = 0;
     int strIndex[] = {0, -1};
-    int maxIndex = data.length() - 1;
+    int maxIndex   = data.length() - 1;
 
     for (int i = 0; i <= maxIndex && found <= index; i++)
     {
@@ -38,21 +38,21 @@ String Helpers::stateToString(Control::State state)
 {
     switch (state)
     {
-    case Control::Open:
-        return "Open";
-    case Control::Opening:
-        return "Opening";
-    case Control::Closing:
-        return "Closing";
-    case Control::Closed:
-        return "Closed";
-    case Control::Stopped:
-        return "Stopped";
-    case Control::PendingChange:
-        return "PendingChange";
-    case Control::Calibrate:
-        return "Calibrate";
-    default:
-        return "";
+        case Control::Open:
+            return "Open";
+        case Control::Opening:
+            return "Opening";
+        case Control::Closing:
+            return "Closing";
+        case Control::Closed:
+            return "Closed";
+        case Control::Stopped:
+            return "Stopped";
+        case Control::PendingChange:
+            return "PendingChange";
+        case Control::Calibrate:
+            return "Calibrate";
+        default:
+            return "";
     }
 }

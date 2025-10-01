@@ -5,10 +5,10 @@ namespace Interfaces
 {
     class IAduninoBase
     {
-        public:
+       public:
         virtual void loop(unsigned long time) = 0;
-        virtual void setup() = 0;
+        virtual void setup()                  = 0;
     };
-}
+}  // namespace Interfaces
 
 #endif  //!_IARDUINOBASE_H_

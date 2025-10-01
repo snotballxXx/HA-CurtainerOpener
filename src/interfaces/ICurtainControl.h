@@ -5,9 +5,9 @@ namespace Interfaces
 {
     class ICurtainControl
     {
-        public:
+       public:
         virtual void calibrate() = 0;
     };
-}
+}  // namespace Interfaces
 
 #endif  //!_ICURTAIN_CONTROL_H_

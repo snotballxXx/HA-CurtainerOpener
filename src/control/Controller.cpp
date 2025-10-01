@@ -9,11 +9,10 @@
 
 using namespace Control;
 
-extern Interfaces::ILogger *logger;
+extern Interfaces::ILogger* logger;
 
-Controller::Controller(Interfaces::IMessenger *messenger) : _messenger(messenger),
-                                                            _currentState(State::Stopped),
-                                                            _pendingStateUpdate(true)
+Controller::Controller(Interfaces::IMessenger* messenger)
+    : _messenger(messenger), _currentState(State::Stopped), _pendingStateUpdate(true)
 {
     _motor1 = new MotorDriver(MOTOR1_STEP_PIN, MOTOR1_DIR_PIN, MOTOR1_ENABLE_PIN, END_STOP_SWITCH1, "Motor1");
 
@@ -63,15 +62,15 @@ void Controller::loop(unsigned long time)
     auto state = digitalRead(PUSH_BUTTON);
     if (state == HIGH && (_currentState == State::Open || _currentState == State::Closed))
     {
-        auto newState = _currentState == State::Open ? CMD_CLOSE : CMD_OPEN;
-        String msg = String("Request to change state via button press, changing to ");
+        auto   newState = _currentState == State::Open ? CMD_CLOSE : CMD_OPEN;
+        String msg      = String("Request to change state via button press, changing to ");
         msg.concat((_currentState == State::Open ? "CMD_CLOSE" : "CMD_OPEN"));
         logger->sendLog(msg);
         messageReceived("", newState);
     }
 }
 
-void Controller::messageReceived(const String &topic, const String &payload)
+void Controller::messageReceived(const String& topic, const String& payload)
 {
     _pendingStateUpdate = true;
     if (String(CMD_OPEN) == payload)
@@ -107,33 +106,33 @@ void Controller::sendStateUpdate()
         Repository::getInstance()->setState(_currentState);
         switch (_currentState)
         {
-        case State::Closed:
-            _messenger->sendMessage(STATE_TOPIC, STATE_CLOSED);
-            msg = "STATE_CLOSED";
-            break;
-        case State::Closing:
-            _messenger->sendMessage(STATE_TOPIC, STATE_CLOSING);
-            msg = "STATE_CLOSING";
-            _pendingStateUpdate = true;
-            break;
-        case State::Open:
-            _messenger->sendMessage(STATE_TOPIC, STATE_OPEN);
-            msg = "STATE_OPEN";
-            break;
-        case State::Opening:
-            _messenger->sendMessage(STATE_TOPIC, STATE_OPENING);
-            msg = "STATE_OPENING";
-            _pendingStateUpdate = true;
-            break;
-        case State::Stopped:
-            _messenger->sendMessage(STATE_TOPIC, STATE_STOPPED);
-            msg = "STATE_STOPPED";
-            break;
-        case State::PendingChange:
-            break;
-        case State::Calibrate:
-            msg = "Calibrate";
-            break;
+            case State::Closed:
+                _messenger->sendMessage(STATE_TOPIC, STATE_CLOSED);
+                msg = "STATE_CLOSED";
+                break;
+            case State::Closing:
+                _messenger->sendMessage(STATE_TOPIC, STATE_CLOSING);
+                msg                 = "STATE_CLOSING";
+                _pendingStateUpdate = true;
+                break;
+            case State::Open:
+                _messenger->sendMessage(STATE_TOPIC, STATE_OPEN);
+                msg = "STATE_OPEN";
+                break;
+            case State::Opening:
+                _messenger->sendMessage(STATE_TOPIC, STATE_OPENING);
+                msg                 = "STATE_OPENING";
+                _pendingStateUpdate = true;
+                break;
+            case State::Stopped:
+                _messenger->sendMessage(STATE_TOPIC, STATE_STOPPED);
+                msg = "STATE_STOPPED";
+                break;
+            case State::PendingChange:
+                break;
+            case State::Calibrate:
+                msg = "Calibrate";
+                break;
         }
 
         logger->sendLog("State change to " + msg);

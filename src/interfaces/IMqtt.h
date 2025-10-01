@@ -6,8 +6,8 @@ namespace Interfaces
 {
     class IMqtt : public IAduninoBase
     {
-        public:
+       public:
     };
-}
+}  // namespace Interfaces
 
 #endif  //!_IMQTT_H_

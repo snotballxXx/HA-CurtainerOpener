@@ -1,18 +1,17 @@
 #ifndef _CONSTANT_H_
 #define _CONSTANT_H_
 
-#define SSID "TheMadHouse24"
 #define PASSWORD "masonlewissuck!"
 #define MQTT_SERVER "192.168.1.120"
 #define MQ_USER "mqttuser"
 #define MQ_PASSWORD "mqttuserpassword"
-
+#define WIFI_NAME "TheMadHouse24"
 #define DISCOVERY_TOPIC "homeassistant/device/{ID}/config"
 #define COMMAND_TOPIC "home/{ID}/command"
 #define STATE_TOPIC "home/{ID}/state"
 #define BASE_TOPIC "home"
 #define SERIAL_BAUD_RATE 115200
-#define VERSION "Version 1.0.0 - Curtain Control"
+#define VERSION "Version 2.0.0 - Curtain Control"
 #define TIME_SERVER_TOPIC "time/update"
 #define TIME_SERVER_TOPIC_REQ "time/request"
 
@@ -26,11 +25,14 @@
 #define NUMBER_OF_MOTORS_ADDR 6
 #define ENTITY_ID_COUNT_ADDR 7
 #define ENTITY_ID_ADDR 8
+#define ENTITY_ID_MAX_LENGTH 20
+#define LOG_MQ_ADDR (ENTITY_ID_MAX_LENGTH + ENTITY_ID_ADDR + 1)
 
 #define DEFAULT_VALUE_MOTOR1_DIR 1
 #define DEFAULT_VALUE_MOTOR2_DIR 1
 #define DEFAULT_VALUE_STEP_COUNT 3200
 #define DEFAULT_MOTOR_COUNT 2
+#define DEFAULT_LOG_TO_MQ 1
 #define DEFAULT_ENTITY_ID "default_entity_id"
 
 #define MOTOR1_STEP_PIN D1
@@ -53,4 +55,4 @@
 #define CMD_OPEN "OPEN"
 #define CMD_CLOSE "CLOSE"
 #define CMD_STOP "STOP"
-#endif //!_CONSTANT_H_
+#endif  //!_CONSTANT_H_

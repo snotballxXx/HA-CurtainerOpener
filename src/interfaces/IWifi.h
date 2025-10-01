@@ -6,8 +6,8 @@ namespace Interfaces
 {
     class IWifi : public IAduninoBase
     {
-        public:
+       public:
     };
-}
+}  // namespace Interfaces
 
 #endif  //!_IWIFI_H_

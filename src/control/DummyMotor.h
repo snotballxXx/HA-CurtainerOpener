@@ -10,18 +10,15 @@ namespace Control
     {
         Interfaces::IMotor* _proxyMotor;
 
-    public:
-        DummyMotor(Interfaces::IMotor* proxyMotor)
-        {
-            _proxyMotor = proxyMotor;
-        }
+       public:
+        DummyMotor(Interfaces::IMotor* proxyMotor) { _proxyMotor = proxyMotor; }
 
-        virtual void loop(unsigned long time) {};
-        virtual void setup() {};
+        virtual void  loop(unsigned long time) {};
+        virtual void  setup() {};
         virtual State getTransistionState() { return _proxyMotor->getTransistionState(); }
         virtual State getState() { return _proxyMotor->getState(); }
-        virtual void setState(State controlState) { };
+        virtual void  setState(State controlState) {};
     };
-}
+}  // namespace Control
 
-#endif //_DUMMY_MOTOR_H
+#endif  //_DUMMY_MOTOR_H

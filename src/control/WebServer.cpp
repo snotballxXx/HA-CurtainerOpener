@@ -1,9 +1,10 @@
 #include "./WebServer.h"
 #include "../control/Repository.h"
-#include "constants.h"
-#include "../utils/Helpers.h"
 #include "../interfaces/ITopicCallback.h"
+#include "../utils/Helpers.h"
+#include "./Repository.h"
 #include "TimeServer.h"
+#include "constants.h"
 
 using namespace Control;
 
@@ -15,15 +16,17 @@ using namespace Control;
 #define ENTITY_ID "{ENTITY_ID}"
 #define MOTOR_COUNT "{MOTOR_COUNT}"
 #define VERSION_TAG "{VERSION}"
+#define LOG_TO_MQ_BOOL "{LOG_TO_MQ_BOOL}"
+#define LOG_TO_MQ "{LOG_TO_MQ}"
 
-extern WebServer *webServer;
-extern FileSystem *fileSystem;
-extern Interfaces::ILogger *logger;
-extern Interfaces::ITimeServer *timeServer;
+extern WebServer*               webServer;
+extern FileSystem*              fileSystem;
+extern Interfaces::ILogger*     logger;
+extern Interfaces::ITimeServer* timeServer;
 
 void handleActionPost()
 {
-    auto body = webServer->getServer()->arg("plain"); // Gets the raw body text
+    auto body = webServer->getServer()->arg("plain");  // Gets the raw body text
     logger->sendLog("Received body:");
     logger->sendLog(body);
 
@@ -48,11 +51,9 @@ void handleActionPost()
 
 void handleSettingsPost()
 {
-    if (webServer->getServer()->hasArg("motor1") &&
-        webServer->getServer()->hasArg("motor2") &&
-        webServer->getServer()->hasArg("stepCount") &&
-        webServer->getServer()->hasArg("entity_id") &&
-        webServer->getServer()->hasArg("motorCount"))
+    if (webServer->getServer()->hasArg("motor1") && webServer->getServer()->hasArg("motor2") &&
+        webServer->getServer()->hasArg("stepCount") && webServer->getServer()->hasArg("entity_id") &&
+        webServer->getServer()->hasArg("motorCount") && webServer->getServer()->hasArg("logToMq"))
     {
         logger->sendLog("Received POST:");
         auto msg = String();
@@ -71,6 +72,9 @@ void handleSettingsPost()
         msg.concat("\n");
         auto motorCount = webServer->getServer()->arg("motorCount").toInt();
         msg.concat("motorCount=" + webServer->getServer()->arg("motorCount"));
+        msg.concat("\n");
+        auto logMq = webServer->getServer()->arg("logToMq") == "1" ? 1 : 0;
+        msg.concat("logToMq=" + webServer->getServer()->arg("logToMq"));
 
         logger->sendLog(msg);
         auto repo = Repository::getInstance();
@@ -79,6 +83,7 @@ void handleSettingsPost()
         repo->setMotorDirection(MOTOR2_DIR_PIN, motor2);
         repo->setEntityId(entityId);
         repo->setMotorCount(motorCount);
+        repo->setLogToMq(logMq);
         webServer->getServer()->send(200, "text/html", "SUCCESS");
     }
     else
@@ -92,7 +97,7 @@ int parseSliderValue(String json)
 {
     //{"slider":"994"}
     int start = json.indexOf(":");
-    int end = json.indexOf("}");
+    int end   = json.indexOf("}");
     if (start != -1 && end != -1)
     {
         auto value = json.substring(start + 2, end - 1);
@@ -102,11 +107,11 @@ int parseSliderValue(String json)
     return -1;
 }
 
-void handleWebSocketMessage(uint8_t client_num, WStype_t type, uint8_t *payload, size_t length)
+void handleWebSocketMessage(uint8_t client_num, WStype_t type, uint8_t* payload, size_t length)
 {
     if (type == WStype_TEXT)
     {
-        auto msg = String((char *)payload);
+        auto msg = String((char*) payload);
 
         if (msg.startsWith("{") && msg.endsWith("}"))
         {
@@ -116,10 +121,9 @@ void handleWebSocketMessage(uint8_t client_num, WStype_t type, uint8_t *payload,
     }
 }
 
-WebServer::WebServer(FileSystem *fileSystem, Interfaces::ITopicCallback *actionCallback) : _webServer(nullptr),
-                                                                                           _fileSystem(fileSystem),
-                                                                                           _actionCallback(actionCallback),
-                                                                                           _slider(1)
+WebServer::WebServer(FileSystem* fileSystem, Interfaces::ITopicCallback* actionCallback,
+                     Interfaces::IMessenger* messenger)
+    : _webServer(nullptr), _fileSystem(fileSystem), _actionCallback(actionCallback), _slider(1), _messenger(messenger)
 {
     _webServer = new ESP8266WebServer(80);
     _webSocket = new WebSocketsServer(81);
@@ -133,33 +137,39 @@ void WebServer::setup()
 
     auto ws = _webServer;
     auto fs = _fileSystem;
-    _webServer->on("/", [ws, fs]()
+    _webServer->on("/",
+                   [ws, fs]()
                    {
-        auto r = Repository::getInstance();
-        String output = String(VERSION) + String(" ") + String(Utils::Helpers::composeClientID());
-        String page = fs->getSettingsPage();
-        page.replace(MOTOR1_BOOL, r->getMotorDirection(MOTOR1_DIR_PIN) == 0 ? "" : "checked");
-        page.replace(MOTOR2_BOOL, r->getMotorDirection(MOTOR2_DIR_PIN) == 0 ? "" : "checked");
+                       auto   r      = Repository::getInstance();
+                       String output = String(VERSION) + String(" ") + String(Utils::Helpers::composeClientID());
+                       String page   = fs->getSettingsPage();
+                       page.replace(MOTOR1_BOOL, r->getMotorDirection(MOTOR1_DIR_PIN) == 0 ? "" : "checked");
+                       page.replace(MOTOR2_BOOL, r->getMotorDirection(MOTOR2_DIR_PIN) == 0 ? "" : "checked");
+                       page.replace(LOG_TO_MQ_BOOL, r->getLogToMq() == 0 ? "" : "checked");
 
-        page.replace(MOTOR1, String(r->getMotorDirection(MOTOR1_DIR_PIN)));
-        page.replace(MOTOR2, String(r->getMotorDirection(MOTOR2_DIR_PIN)));
+                       page.replace(MOTOR1, String(r->getMotorDirection(MOTOR1_DIR_PIN)));
+                       page.replace(MOTOR2, String(r->getMotorDirection(MOTOR2_DIR_PIN)));
+                       page.replace(LOG_TO_MQ, String(r->getLogToMq()));
 
-        page.replace(ENTITY_ID, String(r->getEntityId()));
+                       page.replace(ENTITY_ID, String(r->getEntityId()));
 
-        page.replace(COUNT, String(r->getMaxStepCount()));
-        page.replace(MOTOR_COUNT, String(r->getMotorCount()));
-        page.replace(VERSION_TAG, output);      
-        ws->send(200, "text/html", page); });
+                       page.replace(COUNT, String(r->getMaxStepCount()));
+                       page.replace(MOTOR_COUNT, String(r->getMotorCount()));
+                       page.replace(VERSION_TAG, output);
+                       ws->send(200, "text/html", page);
+                   });
 
-    _webServer->on("/messages", [ws, fs]()
+    _webServer->on("/messages",
+                   [ws, fs]()
                    {
-        auto r = Repository::getInstance();
-        String output = String(VERSION) + String(" ") + String(Utils::Helpers::composeClientID());
-        String page = fs->getMessagesPage();
+                       auto   r      = Repository::getInstance();
+                       String output = String(VERSION) + String(" ") + String(Utils::Helpers::composeClientID());
+                       String page   = fs->getMessagesPage();
 
-        page.replace(ENTITY_ID, String(r->getEntityId()));
-        page.replace(VERSION_TAG, output);      
-        ws->send(200, "text/html", page); });
+                       page.replace(ENTITY_ID, String(r->getEntityId()));
+                       page.replace(VERSION_TAG, output);
+                       ws->send(200, "text/html", page);
+                   });
 
     _webServer->on("/configUpdate", HTTP_POST, handleSettingsPost);
 
@@ -176,12 +186,20 @@ void WebServer::loop(unsigned long time)
     _webSocket->loop();
 }
 
-void WebServer::sendLog(const String &txt)
+void WebServer::sendLog(const String& txt)
 {
     Serial.println(txt);
-    if (_webSocket->connectedClients() != 0)
+    if (_webSocket->connectedClients() != 0 || Repository::getInstance()->getLogToMq() == 1)
     {
-        String msg(timeServer->getTimeAsString(millis()) + " " + txt);
-        _webSocket->broadcastTXT(msg.c_str());
+        String msg(timeServer->getTimeAsString(millis()) + " [" + Repository::getInstance()->getEntityId() + "] " +
+                   txt);
+
+        if (_webSocket->connectedClients() != 0) _webSocket->broadcastTXT(msg);
+
+        if (Repository::getInstance()->getLogToMq() == 1)
+        {
+            Serial.println(msg);
+            _messenger->sendMessage("logger/" + Repository::getInstance()->getEntityId(), msg);
+        }
     }
 }

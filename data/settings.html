@@ -131,7 +131,7 @@ Ctrl + Shift + P and select PlatformIO: New Terminal
         flex: 1;
         padding: 10px;
         margin-left: 200px;
-        margin-top: 50px;
+        margin-top: 0;
       }
       /* Second column for the iframe */
       .iframe-container {
@@ -187,32 +187,44 @@ Ctrl + Shift + P and select PlatformIO: New Terminal
         box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.1);
         color: #ffffff;
       }
+
+      .control-pair {
+        display: inline-flex;
+        align-items: center;
+        margin-right: 20px; /* spacing between pairs */
+      }
+
+      .control-pair label {
+        margin-right: 8px;
+      }
     </style>
   </head>
   <body>
     <div class="header center-title">Curtain Control - ({ENTITY_ID})</div>
     <div class="container">
+      <a href="/messages">Messages</a>
       <!-- First column for local elements -->
       <div class="local-elements">
-        <a href="/messages">Messages</a>
         <h1>Settings</h1>
         <div>
-          <label class="indented" for="motor1">Motor 1 Direction:</label>
-          <input
-            class="indented"
-            type="checkbox"
-            id="motor1"
-            name="motor1"
-            {MOTOR1_BOOL}
-          /><br /><br />
+          <div class="control-pair indented">
+            <label for="motor1">Motor 1 Direction:</label>
+            <input type="checkbox" id="motor1" name="motor1" {MOTOR1_BOOL} />
+          </div>
 
-          <label class="indented" for="motor2">Motor 2 Direction:</label>
+          <div class="control-pair">
+            <label for="motor2">Motor 2 Direction:</label>
+            <input type="checkbox" id="motor2" name="motor2" {MOTOR2_BOOL} />
+          </div>
+          <br /><br />
+
+          <label class="indented" for="logMq">Log to MQTT:</label>
           <input
             class="indented"
             type="checkbox"
-            id="motor2"
-            name="motor2"
-            {MOTOR2_BOOL}
+            id="logToMq"
+            name="logToMq"
+            {LOG_TO_MQ_BOOL}
           /><br /><br />
 
           <form id="formId">
@@ -227,6 +239,12 @@ Ctrl + Shift + P and select PlatformIO: New Terminal
               id="hiddenMotor2"
               name="motor2"
               value="{MOTOR2}"
+            />
+            <input
+              type="hidden"
+              id="hiddenLogToMq"
+              name="logToMq"
+              value="{LOG_TO_MQ}"
             />
 
             <label class="indented" for="stepCount"
@@ -403,6 +421,8 @@ Ctrl + Shift + P and select PlatformIO: New Terminal
         ).checked
           ? 1
           : 0;
+        document.getElementById("hiddenLogToMq").value =
+          document.getElementById("logToMq").checked ? 1 : 0;
       }
 
       function showSpinnerWithDelay() {

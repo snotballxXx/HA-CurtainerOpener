@@ -7,9 +7,9 @@ namespace Interfaces
 {
     class ITopicCallback
     {
-        public:
+       public:
         virtual void messageReceived(const String& topic, const String& payload) = 0;
     };
-}
+}  // namespace Interfaces
 
 #endif  //!_ITOPIC_CALLBACK_H_

@@ -9,10 +9,10 @@ namespace Interfaces
     class ITopicCallback;
     class IMessenger
     {
-        public:
-        virtual void sendMessage(const String& topic, const String &msg) = 0;
+       public:
+        virtual void sendMessage(const String& topic, const String& msg)      = 0;
         virtual void subscribe(const String& topic, ITopicCallback* callback) = 0;
     };
-}
+}  // namespace Interfaces
 
 #endif  //!_IMESSENGER_H_

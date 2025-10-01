@@ -1,11 +1,7 @@
 #include "./FileSystem.h"
 #include <LittleFS.h>
 
-FileSystem::FileSystem() : _settingsPage("Not Found"),
-                           _discovery("Not Found"),
-                           _messagesPage("Not Found")
-{
-}
+FileSystem::FileSystem() : _settingsPage("Not Found"), _discovery("Not Found"), _messagesPage("Not Found") {}
 
 void FileSystem::setup()
 {
@@ -22,7 +18,7 @@ void FileSystem::setup()
     }
     else
     {
-        _settingsPage = file.readString(); // Reads entire file into a String
+        _settingsPage = file.readString();  // Reads entire file into a String
         file.close();
     }
 
@@ -33,7 +29,7 @@ void FileSystem::setup()
     }
     else
     {
-        _messagesPage = file.readString(); // Reads entire file into a String
+        _messagesPage = file.readString();  // Reads entire file into a String
         file.close();
     }
 
@@ -44,11 +40,9 @@ void FileSystem::setup()
     }
     else
     {
-        _discovery = file.readString(); // Reads entire file into a String
+        _discovery = file.readString();  // Reads entire file into a String
         file.close();
     }
 }
 
-void FileSystem::loop(unsigned long time)
-{
-}
+void FileSystem::loop(unsigned long time) {}

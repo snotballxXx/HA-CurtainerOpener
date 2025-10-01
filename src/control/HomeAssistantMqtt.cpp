@@ -1,13 +1,13 @@
 #include "HomeAssistantMqtt.h"
-#include <StreamString.h>
-#include <ESP8266WiFi.h>
-#include <PubSubClient.h>
-#include "interfaces/IWifi.h"
-#include "interfaces/ITopicCallback.h"
 #include "../constants.h"
 #include "../utils/Helpers.h"
 #include "./Repository.h"
+#include "interfaces/ITopicCallback.h"
+#include "interfaces/IWifi.h"
+#include <ESP8266WiFi.h>
 #include <FileSystem.h>
+#include <PubSubClient.h>
+#include <StreamString.h>
 #include <interfaces/ILogger.h>
 
 /*
@@ -23,112 +23,105 @@ Unknown: The state is not yet known.
 */
 
 using namespace Control;
-extern Interfaces::ILogger *logger;
-extern FileSystem *fileSystem;
-extern HomeAssistantMqtt *homeAssistant;
 
-void callback(char *topic, byte *payload, unsigned int length)
+extern Interfaces::ILogger* logger;
+extern FileSystem*          fileSystem;
+extern HomeAssistantMqtt*   homeAssistant;
+
+void callback(char* topic, byte* payload, unsigned int length)
 {
-  String content;
-  content.reserve(length);
+    String content;
+    content.reserve(length);
 
-  for (unsigned int i = 0; i < length; i++)
-    content += (char)payload[i];
+    for (unsigned int i = 0; i < length; i++) content += (char) payload[i];
 
-  homeAssistant->invokeCallbacks(String(topic), content);
+    homeAssistant->invokeCallbacks(String(topic), content);
 }
 
-HomeAssistantMqtt::HomeAssistantMqtt()
-{
-}
+HomeAssistantMqtt::HomeAssistantMqtt() {}
 
 void HomeAssistantMqtt::setup()
 {
-  _espClient = new WiFiClient;
-  _client = new PubSubClient(*_espClient);
+    _espClient = new WiFiClient;
+    _client    = new PubSubClient(*_espClient);
+    _client->setBufferSize(3000);
+    _client->setServer(MQTT_SERVER, 1883);
+    _client->setCallback(callback);
 
-  _client->setBufferSize(3000);
-  _client->setServer(MQTT_SERVER, 1883);
-  _client->setCallback(callback);
+    _clientId = Utils::Helpers::composeClientID();
+    _clientId.replace(':', '-');
 
-  _clientId = Utils::Helpers::composeClientID();
-  _clientId.replace(':', '-');
-
-  _entityId = Repository::getInstance()->getEntityId();
+    _entityId = Repository::getInstance()->getEntityId();
 }
 
 void HomeAssistantMqtt::loop(unsigned long time)
 {
-  // confirm still connected to mqtt server
-  if (!_client->connected())
-    reconnect();
+    // confirm still connected to mqtt server
+    if (!_client->connected()) reconnect();
 
-  _client->loop();
+    _client->loop();
 }
 
-void HomeAssistantMqtt::sendMessage(const String &topic, const String &msg)
+void HomeAssistantMqtt::sendMessage(const String& topic, const String& msg)
 {
-  if (_client->connected())
-  {
-    String tmp = topic;
+    if (_client->connected())
+    {
+        String tmp = topic;
+        tmp.replace("{ID}", _clientId);
+        _client->publish(tmp.c_str(), msg.c_str(), true);
+    }
+}
+
+void HomeAssistantMqtt::subscribe(const String& topic, Interfaces::ITopicCallback* callback)
+{
+    String tmp(topic);
     tmp.replace("{ID}", _clientId);
-    logger->sendLog("Request to send on " + tmp);
-    logger->sendLog("Publish on " + tmp + " with message " + msg);
-    _client->publish(tmp.c_str(), msg.c_str(), true);
-  }
+    logger->sendLog("Subscribed to " + tmp);
+    _callbacks.insert(std::pair<String, Interfaces::ITopicCallback*>(tmp, callback));
 }
 
-void HomeAssistantMqtt::subscribe(const String &topic, Interfaces::ITopicCallback *callback)
+void HomeAssistantMqtt::invokeCallbacks(const String& topic, const String& payload)
 {
-  String tmp(topic);
-  tmp.replace("{ID}", _clientId);
-  logger->sendLog("Subscribed to " + tmp);
-  _callbacks.insert(std::pair<String, Interfaces::ITopicCallback *>(tmp, callback));
-}
+    logger->sendLog("Message arrived [" + topic + "]: " + payload);
 
-void HomeAssistantMqtt::invokeCallbacks(const String &topic, const String &payload)
-{
-  logger->sendLog("Message arrived [" + topic + "]: " + payload);
+    auto range = _callbacks.equal_range(topic);
 
-  auto range = _callbacks.equal_range(topic);
-
-  for (auto it = range.first; it != range.second; ++it)
-    it->second->messageReceived(topic, payload);
+    for (auto it = range.first; it != range.second; ++it) it->second->messageReceived(topic, payload);
 }
 
 void HomeAssistantMqtt::reconnect()
 {
-  // Loop until we're reconnected
-  while (!_client->connected())
-  {
-    logger->sendLog("Attempting MQTT connection...");
-
-    // Attempt to connect
-    if (_client->connect(_clientId.c_str(), MQ_USER, MQ_PASSWORD))
+    // Loop until we're reconnected
+    while (!_client->connected())
     {
-      logger->sendLog("connected");
-      String topic = DISCOVERY_TOPIC;
-      topic.replace("{ID}", _clientId);
+        logger->sendLog("Attempting MQTT connection...");
 
-      String msg = fileSystem->getDiscovery();
-      msg.replace("{ID}", _clientId);
-      msg.replace("{ENTITY_ID}", _entityId);
+        // Attempt to connect
+        if (_client->connect(_clientId.c_str(), MQ_USER, MQ_PASSWORD))
+        {
+            logger->sendLog("connected");
+            String topic = DISCOVERY_TOPIC;
+            topic.replace("{ID}", _clientId);
 
-      logger->sendLog("Message published to topic (2k) '" + topic + "' :" + msg);
-      // Once connected, publish a discovery message
-      _client->publish(topic.c_str(), msg.c_str(), true);
+            String msg = fileSystem->getDiscovery();
+            msg.replace("{ID}", _clientId);
+            msg.replace("{ENTITY_ID}", _entityId);
 
-      for (auto it = _callbacks.begin(); it != _callbacks.end(); ++it)
-      {
-        _client->unsubscribe(it->first.c_str());
-        _client->subscribe(it->first.c_str());
-        logger->sendLog("Subscribing to " + it->first);
-      }
+            logger->sendLog("Message published to topic (2k) '" + topic + "' :" + msg);
+            // Once connected, publish a discovery message
+            _client->publish(topic.c_str(), msg.c_str(), true);
+
+            for (auto it = _callbacks.begin(); it != _callbacks.end(); ++it)
+            {
+                _client->unsubscribe(it->first.c_str());
+                _client->subscribe(it->first.c_str());
+                logger->sendLog("Subscribing to " + it->first);
+            }
+        }
+        else
+        {
+            // Wait 5 seconds before retrying
+            delay(5000);
+        }
     }
-    else
-    {
-      // Wait 5 seconds before retrying
-      delay(5000);
-    }
-  }
 }

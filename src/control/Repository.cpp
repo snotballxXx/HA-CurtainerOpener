@@ -15,14 +15,15 @@ Repository::Repository()
         Serial.println("Repo loading");
         _motor1Direction = EEPROM.read(MOTOR1_DIR_ADDR);
         _motor2Direction = EEPROM.read(MOTOR2_DIR_ADDR);
-        _maxStepCount = EEPROM.read(STEP_COUNT_ADDR_HIGH) << 8;
+        _maxStepCount    = EEPROM.read(STEP_COUNT_ADDR_HIGH) << 8;
         _maxStepCount |= EEPROM.read(STEP_COUNT_ADDR_LOW);
-        _initialState = (State)EEPROM.read(STATE_ADDR);
-        _numberOfMotors = EEPROM.read(NUMBER_OF_MOTORS_ADDR);
+        _initialState      = (State) EEPROM.read(STATE_ADDR);
+        _numberOfMotors    = EEPROM.read(NUMBER_OF_MOTORS_ADDR);
+        _logToMq           = EEPROM.read(LOG_MQ_ADDR);
         auto entityIdCount = EEPROM.read(ENTITY_ID_COUNT_ADDR);
-        _entityId = "";
-        for (uint8_t i = 0; i < entityIdCount; ++i)
-            _entityId += (char)EEPROM.read(ENTITY_ID_ADDR + i);
+        _entityId          = "";
+        for (uint8_t i = 0; i < entityIdCount && i < ENTITY_ID_MAX_LENGTH; ++i)
+            _entityId += (char) EEPROM.read(ENTITY_ID_ADDR + i);
     }
     else
     {
@@ -34,6 +35,7 @@ Repository::Repository()
         setState(State::Calibrate);
         setEntityId(DEFAULT_ENTITY_ID);
         setMotorCount(DEFAULT_MOTOR_COUNT);
+        setLogToMq(DEFAULT_LOG_TO_MQ);
         EEPROM.commit();
     }
 }
@@ -72,13 +74,14 @@ void Repository::setState(State state)
 
 void Repository::setEntityId(String id)
 {
-    auto entityIdCount = id.length();
-    for (uint8_t i = 0; i < entityIdCount; ++i)
+    auto entityIdCount = 0;
+    for (uint8_t i = 0; i < id.length() && i < ENTITY_ID_MAX_LENGTH; ++i)
     {
         EEPROM.write(ENTITY_ID_ADDR + i, id[i]);
+        entityIdCount++;
     }
 
-    _entityId = id;
+    _entityId = id.substring(0, entityIdCount);
     EEPROM.write(ENTITY_ID_COUNT_ADDR, entityIdCount);
     EEPROM.commit();
 }
@@ -87,5 +90,12 @@ void Repository::setMotorCount(byte count)
 {
     _numberOfMotors = count;
     EEPROM.write(NUMBER_OF_MOTORS_ADDR, count);
+    EEPROM.commit();
+}
+
+void Repository::setLogToMq(byte logToMq)
+{
+    _logToMq = logToMq;
+    EEPROM.write(LOG_MQ_ADDR, logToMq);
     EEPROM.commit();
 }

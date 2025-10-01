@@ -10,7 +10,7 @@ namespace Interfaces
 {
     class IMessenger;
     class IMotor;
-}
+}  // namespace Interfaces
 
 namespace Control
 {
@@ -18,19 +18,20 @@ namespace Control
 
     class Controller : public Interfaces::IAduninoBase, public Interfaces::ITopicCallback
     {
-        Interfaces::IMotor *_motor1;
-        Interfaces::IMotor *_motor2;
-        Interfaces::IMessenger *_messenger;
-        State _currentState;
-        bool _pendingStateUpdate;
-    public:
-        Controller(Interfaces::IMessenger *messenger);
+        Interfaces::IMotor*     _motor1;
+        Interfaces::IMotor*     _motor2;
+        Interfaces::IMessenger* _messenger;
+        State                   _currentState;
+        bool                    _pendingStateUpdate;
+
+       public:
+        Controller(Interfaces::IMessenger* messenger);
 
         virtual void loop(unsigned long time);
         virtual void setup();
-        virtual void messageReceived(const String &topic, const String &payload);
-        void sendStateUpdate();
+        virtual void messageReceived(const String& topic, const String& payload);
+        void         sendStateUpdate();
     };
-}
+}  // namespace Control
 
-#endif // _CONTROLLER_H
+#endif  // _CONTROLLER_H

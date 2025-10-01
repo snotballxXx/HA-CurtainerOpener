@@ -6,17 +6,19 @@ namespace Control
 {
     class Repository
     {
-        byte _motor1Direction;
-        byte _motor2Direction;
+        byte           _motor1Direction;
+        byte           _motor2Direction;
         unsigned short _maxStepCount;
-        State _initialState;
-        String _entityId;
-        byte _numberOfMotors;
+        State          _initialState;
+        String         _entityId;
+        byte           _numberOfMotors;
+        byte           _logToMq;
 
         Repository();
-        
-        public:
-        static Repository* getInstance() {
+
+       public:
+        static Repository* getInstance()
+        {
             static Repository instance;
             return &instance;
         }
@@ -25,16 +27,19 @@ namespace Control
         void setMotorDirection(int id, byte value);
 
         unsigned short getMaxStepCount() { return _maxStepCount; }
-        void setMaxStepCount(unsigned short value);
+        void           setMaxStepCount(unsigned short value);
 
         State getInitalState() { return _initialState; }
-        void setState(State state);
+        void  setState(State state);
 
         String getEntityId() { return _entityId; }
-        void setEntityId(String id);
+        void   setEntityId(String id);
 
         byte getMotorCount() { return _numberOfMotors; }
         void setMotorCount(byte count);
+
+        byte getLogToMq() { return _logToMq; }
+        void setLogToMq(byte logToMq);
     };
-}
+}  // namespace Control
 #endif  //!__REPOSITORY__H__

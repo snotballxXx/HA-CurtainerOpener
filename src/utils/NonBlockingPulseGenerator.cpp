@@ -4,14 +4,10 @@
 
 using namespace Utils;
 
-extern Control::WebServer *webServer;
+extern Control::WebServer* webServer;
 
-NonBlockingPulseGenerator::NonBlockingPulseGenerator(int outputPin, uint64_t microsOn, uint64_t microsOff) : _pin(outputPin),
-                                                                                                             _onDuration(microsOn),
-                                                                                                             _offDuration(microsOff),
-                                                                                                             _active(false),
-                                                                                                             _offTime(0),
-                                                                                                             _offActiveTime(0)
+NonBlockingPulseGenerator::NonBlockingPulseGenerator(int outputPin, uint64_t microsOn, uint64_t microsOff)
+    : _pin(outputPin), _onDuration(microsOn), _offDuration(microsOff), _active(false), _offTime(0), _offActiveTime(0)
 {
     pinMode(_pin, OUTPUT);
     digitalWrite(_pin, LOW);
@@ -23,7 +19,7 @@ void NonBlockingPulseGenerator::triggerPulse()
     {
         digitalWrite(_pin, HIGH);
         auto startTime = micros64();
-        _offTime = startTime + _onDuration;
+        _offTime       = startTime + _onDuration;
         _offActiveTime = startTime + _onDuration + (webServer->getSlider() * _offDuration);
         //_offActiveTime = startTime + _onDuration + _offDuration;
         _active = true;

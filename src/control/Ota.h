@@ -14,11 +14,11 @@ namespace Control
     {
         Interfaces::IWebServer* _webserver;
 
-        public:
+       public:
         Ota(Interfaces::IWebServer* webserver);
         virtual void loop(unsigned long time);
-        virtual void setup();        
-    };    
-}
+        virtual void setup();
+    };
+}  // namespace Control
 
 #endif  //!_IR_OTA_H_
