@@ -27,7 +27,8 @@ namespace Control
 
         virtual ESP8266WebServer*           getServer() { return _webServer; };
         virtual Interfaces::ITopicCallback* getCallback() { return _actionCallback; }
-        virtual void                        sendLog(const String& txt);
+        virtual int getConnectedWebSocketCount();
+        virtual void broadcastTXT(const String& msg);
 
         virtual int  getSlider() { return _slider; }
         virtual void setSlider(int value) { _slider = value; }

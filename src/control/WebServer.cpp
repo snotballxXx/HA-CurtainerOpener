@@ -186,20 +186,12 @@ void WebServer::loop(unsigned long time)
     _webSocket->loop();
 }
 
-void WebServer::sendLog(const String& txt)
+int WebServer::getConnectedWebSocketCount()
 {
-    Serial.println(txt);
-    if (_webSocket->connectedClients() != 0 || Repository::getInstance()->getLogToMq() == 1)
-    {
-        String msg(timeServer->getTimeAsString(millis()) + " [" + Repository::getInstance()->getEntityId() + "] " +
-                   txt);
+    return _webSocket->connectedClients();
+}
 
-        if (_webSocket->connectedClients() != 0) _webSocket->broadcastTXT(msg);
-
-        if (Repository::getInstance()->getLogToMq() == 1)
-        {
-            Serial.println(msg);
-            _messenger->sendMessage("logger/" + Repository::getInstance()->getEntityId(), msg);
-        }
-    }
+void WebServer::broadcastTXT(const String& msg)
+{
+    _webSocket->broadcastTXT(msg.c_str());
 }

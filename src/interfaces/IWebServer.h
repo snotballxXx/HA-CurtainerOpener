@@ -7,11 +7,13 @@
 
 namespace Interfaces
 {
-    class IWebServer : public IAduninoBase, public ILogger
+    class IWebServer : public IAduninoBase
     {
        public:
         virtual ESP8266WebServer*           getServer()   = 0;
         virtual Interfaces::ITopicCallback* getCallback() = 0;
+        virtual int getConnectedWebSocketCount() = 0;
+        virtual void broadcastTXT(const String& msg) = 0;
 
         virtual int  getSlider()          = 0;
         virtual void setSlider(int value) = 0;

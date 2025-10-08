@@ -41,6 +41,7 @@ curtains
 #include "./control/Ota.h"
 #include "./control/Controller.h"
 #include "./control/Repository.h"
+#include "./control/Logger.h"
 #include "constants.h"
 #include "FileSystem.h"
 #include "control/TimeServer.h"
@@ -52,8 +53,8 @@ Control::HomeAssistantMqtt* homeAssistant = new Control::HomeAssistantMqtt();
 Control::Controller*        controller    = new Control::Controller(homeAssistant);
 Control::WebServer*         webServer     = new Control::WebServer(fileSystem, controller, homeAssistant);
 Control::Ota*               ota           = new Control::Ota(webServer);
-Interfaces::ILogger*        logger        = webServer;
 Interfaces::ITimeServer*    timeServer    = new Control::TimeServer(homeAssistant);
+Interfaces::ILogger*        logger        = new Control::Logger(webServer, timeServer, homeAssistant);
 
 void setup()
 {
